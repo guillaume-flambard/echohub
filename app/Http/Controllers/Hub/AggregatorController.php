@@ -165,7 +165,7 @@ class AggregatorController extends Controller
         $userApps = $this->permissionService->getUserApps($request->user());
 
         // Filter to specified apps if provided
-        if (!empty($validated['apps'])) {
+        if (! empty($validated['apps'])) {
             $userApps = $userApps->whereIn('id', $validated['apps']);
         }
 
@@ -216,11 +216,11 @@ class AggregatorController extends Controller
         $query = AppAccessLog::where('user_id', $request->user()->id)
             ->with('app');
 
-        if (!empty($validated['app_id'])) {
+        if (! empty($validated['app_id'])) {
             $query->where('app_id', $validated['app_id']);
         }
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             if ($validated['status'] === 'success') {
                 $query->where('response_code', '>=', 200)->where('response_code', '<', 300);
             } else {
@@ -230,11 +230,11 @@ class AggregatorController extends Controller
             }
         }
 
-        if (!empty($validated['from'])) {
+        if (! empty($validated['from'])) {
             $query->where('created_at', '>=', $validated['from']);
         }
 
-        if (!empty($validated['to'])) {
+        if (! empty($validated['to'])) {
             $query->where('created_at', '<=', $validated['to']);
         }
 
@@ -260,15 +260,15 @@ class AggregatorController extends Controller
 
         $query = AppAccessLog::where('user_id', $request->user()->id);
 
-        if (!empty($validated['app_id'])) {
+        if (! empty($validated['app_id'])) {
             $query->where('app_id', $validated['app_id']);
         }
 
-        if (!empty($validated['from'])) {
+        if (! empty($validated['from'])) {
             $query->where('created_at', '>=', $validated['from']);
         }
 
-        if (!empty($validated['to'])) {
+        if (! empty($validated['to'])) {
             $query->where('created_at', '<=', $validated['to']);
         }
 

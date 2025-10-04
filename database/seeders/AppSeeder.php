@@ -55,6 +55,6 @@ class AppSeeder extends Seeder
             }
         }
 
-        $this->command->info('Seeded ' . count($apps) . ' sample apps and their contacts');
+        $this->command->info('Seeded '.count($apps).' sample apps and their contacts');
     }
 }

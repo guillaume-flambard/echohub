@@ -30,7 +30,7 @@ class ServiceAccount extends Model
      */
     public static function generateApiKey(): string
     {
-        return 'sk_' . Str::random(64);
+        return 'sk_'.Str::random(64);
     }
 
     /**

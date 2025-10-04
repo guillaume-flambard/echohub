@@ -13,11 +13,6 @@ class PermissionService
     /**
      * Grant user permission to access an app with specific scopes
      *
-     * @param User $user
-     * @param App $app
-     * @param array $scopes
-     * @param Carbon|null $expiresAt
-     * @return HubAppPermission
      * @throws \Exception
      */
     public function grantPermission(
@@ -28,9 +23,9 @@ class PermissionService
     ): HubAppPermission {
         // Validate scopes are available in the app
         $invalidScopes = array_diff($scopes, $app->available_scopes ?? []);
-        if (!empty($invalidScopes)) {
+        if (! empty($invalidScopes)) {
             throw new \Exception(
-                'Invalid scopes: ' . implode(', ', $invalidScopes) . '. Available scopes: ' . implode(', ', $app->available_scopes ?? [])
+                'Invalid scopes: '.implode(', ', $invalidScopes).'. Available scopes: '.implode(', ', $app->available_scopes ?? [])
             );
         }
 
@@ -51,10 +46,6 @@ class PermissionService
 
     /**
      * Revoke user permission to access an app
-     *
-     * @param User $user
-     * @param App $app
-     * @return bool
      */
     public function revokePermission(User $user, App $app): bool
     {
@@ -66,10 +57,6 @@ class PermissionService
     /**
      * Add scopes to existing permission
      *
-     * @param User $user
-     * @param App $app
-     * @param array $scopes
-     * @return HubAppPermission|null
      * @throws \Exception
      */
     public function addScopes(User $user, App $app, array $scopes): ?HubAppPermission
@@ -78,14 +65,14 @@ class PermissionService
             ->where('app_id', $app->id)
             ->first();
 
-        if (!$permission) {
+        if (! $permission) {
             throw new \Exception('Permission not found');
         }
 
         // Validate scopes
         $invalidScopes = array_diff($scopes, $app->available_scopes ?? []);
-        if (!empty($invalidScopes)) {
-            throw new \Exception('Invalid scopes: ' . implode(', ', $invalidScopes));
+        if (! empty($invalidScopes)) {
+            throw new \Exception('Invalid scopes: '.implode(', ', $invalidScopes));
         }
 
         foreach ($scopes as $scope) {
@@ -97,11 +84,6 @@ class PermissionService
 
     /**
      * Remove scopes from existing permission
-     *
-     * @param User $user
-     * @param App $app
-     * @param array $scopes
-     * @return HubAppPermission|null
      */
     public function removeScopes(User $user, App $app, array $scopes): ?HubAppPermission
     {
@@ -109,7 +91,7 @@ class PermissionService
             ->where('app_id', $app->id)
             ->first();
 
-        if (!$permission) {
+        if (! $permission) {
             return null;
         }
 
@@ -122,11 +104,6 @@ class PermissionService
 
     /**
      * Check if user has permission to access an app
-     *
-     * @param User $user
-     * @param App $app
-     * @param array $requiredScopes
-     * @return bool
      */
     public function hasPermission(User $user, App $app, array $requiredScopes = []): bool
     {
@@ -134,7 +111,7 @@ class PermissionService
             ->where('app_id', $app->id)
             ->first();
 
-        if (!$permission || !$permission->isValid()) {
+        if (! $permission || ! $permission->isValid()) {
             return false;
         }
 
@@ -145,7 +122,7 @@ class PermissionService
 
         // Check if user has all required scopes
         foreach ($requiredScopes as $scope) {
-            if (!$permission->hasScope($scope)) {
+            if (! $permission->hasScope($scope)) {
                 return false;
             }
         }
@@ -155,10 +132,6 @@ class PermissionService
 
     /**
      * Get all apps a user has permission to access
-     *
-     * @param User $user
-     * @param bool $onlyValid
-     * @return Collection
      */
     public function getUserApps(User $user, bool $onlyValid = true): Collection
     {
@@ -179,10 +152,6 @@ class PermissionService
 
     /**
      * Get all users with permission to access an app
-     *
-     * @param App $app
-     * @param bool $onlyValid
-     * @return Collection
      */
     public function getAppUsers(App $app, bool $onlyValid = true): Collection
     {
@@ -203,10 +172,6 @@ class PermissionService
 
     /**
      * Get user's permission for a specific app
-     *
-     * @param User $user
-     * @param App $app
-     * @return HubAppPermission|null
      */
     public function getPermission(User $user, App $app): ?HubAppPermission
     {
@@ -217,11 +182,6 @@ class PermissionService
 
     /**
      * Extend permission expiration
-     *
-     * @param User $user
-     * @param App $app
-     * @param Carbon $newExpiresAt
-     * @return HubAppPermission|null
      */
     public function extendPermission(User $user, App $app, Carbon $newExpiresAt): ?HubAppPermission
     {
@@ -229,7 +189,7 @@ class PermissionService
             ->where('app_id', $app->id)
             ->first();
 
-        if (!$permission) {
+        if (! $permission) {
             return null;
         }
 
@@ -240,10 +200,6 @@ class PermissionService
 
     /**
      * Remove expiration from permission (make it permanent)
-     *
-     * @param User $user
-     * @param App $app
-     * @return HubAppPermission|null
      */
     public function makePermissionPermanent(User $user, App $app): ?HubAppPermission
     {
@@ -251,7 +207,7 @@ class PermissionService
             ->where('app_id', $app->id)
             ->first();
 
-        if (!$permission) {
+        if (! $permission) {
             return null;
         }
 
@@ -262,8 +218,6 @@ class PermissionService
 
     /**
      * Get expired permissions
-     *
-     * @return Collection
      */
     public function getExpiredPermissions(): Collection
     {
@@ -286,12 +240,6 @@ class PermissionService
 
     /**
      * Bulk grant permissions to multiple users
-     *
-     * @param array $userIds
-     * @param App $app
-     * @param array $scopes
-     * @param Carbon|null $expiresAt
-     * @return Collection
      */
     public function bulkGrantPermissions(
         array $userIds,
@@ -319,8 +267,6 @@ class PermissionService
     /**
      * Bulk revoke permissions from multiple users
      *
-     * @param array $userIds
-     * @param App $app
      * @return int Number of revoked permissions
      */
     public function bulkRevokePermissions(array $userIds, App $app): int

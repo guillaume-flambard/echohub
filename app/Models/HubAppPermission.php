@@ -66,7 +66,7 @@ class HubAppPermission extends Model
     {
         $scopes = $this->granted_scopes ?? [];
 
-        if (!in_array($scope, $scopes)) {
+        if (! in_array($scope, $scopes)) {
             $scopes[] = $scope;
             $this->update(['granted_scopes' => $scopes]);
         }
@@ -78,7 +78,7 @@ class HubAppPermission extends Model
     public function removeScope(string $scope): void
     {
         $scopes = $this->granted_scopes ?? [];
-        $scopes = array_values(array_filter($scopes, fn($s) => $s !== $scope));
+        $scopes = array_values(array_filter($scopes, fn ($s) => $s !== $scope));
 
         $this->update(['granted_scopes' => $scopes]);
     }

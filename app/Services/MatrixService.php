@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class MatrixService
 {
     private string $homeserverUrl;
+
     private ?string $accessToken;
 
     public function __construct(?string $accessToken = null)
@@ -29,7 +30,7 @@ class MatrixService
                 'admin' => $admin,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('Matrix registration failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
@@ -76,7 +77,7 @@ class MatrixService
                 'password' => $password,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'error' => 'Login failed',
@@ -104,7 +105,7 @@ class MatrixService
      */
     public function sendMessage(string $roomId, string $message, string $msgType = 'm.text'): array
     {
-        if (!$this->accessToken) {
+        if (! $this->accessToken) {
             return ['success' => false, 'error' => 'No access token'];
         }
 
@@ -116,7 +117,7 @@ class MatrixService
                     'body' => $message,
                 ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'error' => 'Failed to send message',
@@ -140,7 +141,7 @@ class MatrixService
      */
     public function createDirectRoom(string $userId): array
     {
-        if (!$this->accessToken) {
+        if (! $this->accessToken) {
             return ['success' => false, 'error' => 'No access token'];
         }
 
@@ -152,7 +153,7 @@ class MatrixService
                     'preset' => 'trusted_private_chat',
                 ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'error' => 'Failed to create room',
@@ -176,7 +177,7 @@ class MatrixService
      */
     public function getRoomMessages(string $roomId, int $limit = 50, ?string $from = null): array
     {
-        if (!$this->accessToken) {
+        if (! $this->accessToken) {
             return ['success' => false, 'error' => 'No access token'];
         }
 
@@ -189,7 +190,7 @@ class MatrixService
             $response = Http::withToken($this->accessToken)
                 ->get("{$this->homeserverUrl}/_matrix/client/v3/rooms/{$roomId}/messages", $query);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'error' => 'Failed to get messages',
@@ -220,7 +221,7 @@ class MatrixService
         try {
             $response = Http::get("{$this->homeserverUrl}/_matrix/client/v3/profile/{$userId}");
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'error' => 'Failed to get profile',
@@ -247,7 +248,7 @@ class MatrixService
      */
     public function setDisplayName(string $userId, string $displayName): array
     {
-        if (!$this->accessToken) {
+        if (! $this->accessToken) {
             return ['success' => false, 'error' => 'No access token'];
         }
 
@@ -283,7 +284,7 @@ class MatrixService
      */
     public function sync(?string $since = null, int $timeout = 30000): array
     {
-        if (!$this->accessToken) {
+        if (! $this->accessToken) {
             return ['success' => false, 'error' => 'No access token'];
         }
 
@@ -297,7 +298,7 @@ class MatrixService
                 ->timeout(($timeout / 1000) + 10) // Add buffer to HTTP timeout
                 ->get("{$this->homeserverUrl}/_matrix/client/v3/sync", $query);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return [
                     'success' => false,
                     'error' => 'Sync failed',

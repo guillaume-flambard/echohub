@@ -12,13 +12,12 @@ class ValidateServiceAccountScope
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  ...$scopes
      */
     public function handle(Request $request, Closure $next, string ...$scopes): Response
     {
         $serviceAccount = $request->get('service_account');
 
-        if (!$serviceAccount) {
+        if (! $serviceAccount) {
             return response()->json([
                 'message' => 'Service account not found in request',
             ], 401);
@@ -26,7 +25,7 @@ class ValidateServiceAccountScope
 
         // Check if service account has all required scopes
         foreach ($scopes as $scope) {
-            if (!$serviceAccount->hasScope($scope)) {
+            if (! $serviceAccount->hasScope($scope)) {
                 return response()->json([
                     'message' => "Missing required scope: {$scope}",
                 ], 403);

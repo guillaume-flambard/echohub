@@ -82,12 +82,14 @@ function MessageBubble({ message, contact, isLastMessage }: MessageBubbleProps) 
                 }`}
             >
                 <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                <p className={`mt-1 text-xs ${isUser ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                    {new Date(message.timestamp).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    })}
-                </p>
+                {message.timestamp && (
+                    <p className={`mt-1 text-xs ${isUser ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                        {new Date(message.timestamp).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        })}
+                    </p>
+                )}
             </div>
 
             {isUser && (

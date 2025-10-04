@@ -59,31 +59,21 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
             localStorage.setItem('matrix_access_token', loginResponse.access_token);
             localStorage.setItem('matrix_user_id', loginResponse.user_id);
 
-            // Start client
-            await client.startClient({ initialSyncLimit: 10 });
+            // Wait for initial sync to complete
+            await new Promise<void>((resolve) => {
+                client.once(sdk.ClientEvent.Sync as any, (state: any) => {
+                    if (state === 'PREPARED') {
+                        resolve();
+                    }
+                });
+                client.startClient({ initialSyncLimit: 50 });
+            });
 
-            // Listen for messages
+            // Listen for new messages
             client.on(sdk.RoomEvent.Timeline as any, (event: any, room: any) => {
                 if (event.getType() === 'm.room.message') {
-                    const roomId = room.roomId;
-                    const message: MatrixMessage = {
-                        sender: event.getSender(),
-                        content: event.getContent().body,
-                        timestamp: event.getTs(),
-                        eventId: event.getId(),
-                    };
-
-                    set((state) => ({
-                        rooms: {
-                            ...state.rooms,
-                            [roomId]: {
-                                ...state.rooms[roomId],
-                                roomId,
-                                name: room.name || 'Direct Message',
-                                messages: [...(state.rooms[roomId]?.messages || []), message],
-                            },
-                        },
-                    }));
+                    // Trigger re-render when new messages arrive
+                    set((state) => ({ ...state }));
                 }
             });
 
@@ -144,55 +134,65 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
     },
 
     getMessages: (contactMatrixId) => {
-        const { client, rooms } = get();
+        const { client, currentUserId } = get();
         if (!client) return [];
 
         // Find room with this contact
-        const room = Object.values(rooms).find((r) => {
-            const matrixRoom = client.getRoom(r.roomId);
-            if (!matrixRoom) return false;
-
-            const members = matrixRoom.getJoinedMembers();
-            return members.some((m) => m.userId === contactMatrixId);
+        const rooms = client.getRooms();
+        const room = rooms.find((r) => {
+            const members = r.getJoinedMembers();
+            return (
+                members.some((m) => m.userId === contactMatrixId) &&
+                members.some((m) => m.userId === currentUserId)
+            );
         });
 
-        return room?.messages || [];
+        if (!room) return [];
+
+        // Get timeline events (message history from Matrix)
+        const timeline = room.getLiveTimeline();
+        const events = timeline.getEvents();
+
+        // Convert to our message format
+        const messages: MatrixMessage[] = events
+            .filter((event) => event.getType() === 'm.room.message')
+            .map((event) => ({
+                sender: event.getSender() || '',
+                content: event.getContent().body || '',
+                timestamp: event.getTs() || Date.now(),
+                eventId: event.getId() || '',
+            }));
+
+        return messages;
     },
 
-    initializeFromStorage: () => {
+    initializeFromStorage: async () => {
         const accessToken = localStorage.getItem('matrix_access_token');
         const userId = localStorage.getItem('matrix_user_id');
 
         if (accessToken && userId) {
-            const client = sdk.createClient({
-                baseUrl: MATRIX_HOMESERVER,
-                accessToken,
-                userId,
-            });
+            try {
+                const client = sdk.createClient({
+                    baseUrl: MATRIX_HOMESERVER,
+                    accessToken,
+                    userId,
+                });
 
-            client.startClient({ initialSyncLimit: 10 }).then(() => {
-                // Listen for messages
+                // Wait for initial sync
+                await new Promise<void>((resolve) => {
+                    client.once(sdk.ClientEvent.Sync as any, (state: any) => {
+                        if (state === 'PREPARED') {
+                            resolve();
+                        }
+                    });
+                    client.startClient({ initialSyncLimit: 50 });
+                });
+
+                // Listen for new messages
                 client.on(sdk.RoomEvent.Timeline as any, (event: any, room: any) => {
                     if (event.getType() === 'm.room.message') {
-                        const roomId = room.roomId;
-                        const message: MatrixMessage = {
-                            sender: event.getSender(),
-                            content: event.getContent().body,
-                            timestamp: event.getTs(),
-                            eventId: event.getId(),
-                        };
-
-                        set((state) => ({
-                            rooms: {
-                                ...state.rooms,
-                                [roomId]: {
-                                    ...state.rooms[roomId],
-                                    roomId,
-                                    name: room.name || 'Direct Message',
-                                    messages: [...(state.rooms[roomId]?.messages || []), message],
-                                },
-                            },
-                        }));
+                        // Trigger re-render when new messages arrive
+                        set((state) => ({ ...state }));
                     }
                 });
 
@@ -201,11 +201,11 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
                     isConnected: true,
                     currentUserId: userId,
                 });
-            }).catch((error) => {
+            } catch (error) {
                 console.error('Failed to restore session:', error);
                 localStorage.removeItem('matrix_access_token');
                 localStorage.removeItem('matrix_user_id');
-            });
+            }
         }
     },
 }));

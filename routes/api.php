@@ -8,10 +8,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/dashboard/activity', [DashboardController::class, 'recentActivity']);
+    Route::get('/dashboard/trends', [DashboardController::class, 'bookingTrends']);
 
     // Contacts
     Route::get('/contacts', [ContactController::class, 'index']);

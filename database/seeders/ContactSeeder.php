@@ -16,8 +16,9 @@ class ContactSeeder extends Seeder
     {
         $user = User::first();
 
-        if (!$user) {
+        if (! $user) {
             $this->command->error('No users found. Please seed users first.');
+
             return;
         }
 
@@ -98,10 +99,10 @@ class ContactSeeder extends Seeder
             );
         }
 
-        $this->command->info("Created " . count($humanContacts) . " human contacts");
+        $this->command->info('Created '.count($humanContacts).' human contacts');
         $this->command->newLine();
         $this->command->info('✓ All contacts seeded successfully!');
-        $this->command->info('  - ' . $apps->count() . ' app contacts');
-        $this->command->info('  - ' . count($humanContacts) . ' human contacts');
+        $this->command->info('  - '.$apps->count().' app contacts');
+        $this->command->info('  - '.count($humanContacts).' human contacts');
     }
 }

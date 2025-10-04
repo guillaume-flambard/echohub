@@ -18,8 +18,9 @@ class PermissionSeeder extends Seeder
         // Get the first user (usually the seeded user)
         $user = User::first();
 
-        if (!$user) {
+        if (! $user) {
             $this->command->error('No users found. Please seed users first.');
+
             return;
         }
 
@@ -28,6 +29,7 @@ class PermissionSeeder extends Seeder
 
         if ($apps->isEmpty()) {
             $this->command->error('No apps found. Please seed apps first.');
+
             return;
         }
 
@@ -64,7 +66,7 @@ class PermissionSeeder extends Seeder
         }
 
         // Display seeded permissions
-        $this->command->info('Permissions granted to: ' . $user->name . ' (' . $user->email . ')');
+        $this->command->info('Permissions granted to: '.$user->name.' ('.$user->email.')');
         $this->command->newLine();
 
         foreach ($permissions as $perm) {

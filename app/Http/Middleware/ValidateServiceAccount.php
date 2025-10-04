@@ -18,7 +18,7 @@ class ValidateServiceAccount
     {
         $apiKey = $request->bearerToken();
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             return response()->json([
                 'message' => 'No API key provided',
             ], 401);
@@ -27,14 +27,14 @@ class ValidateServiceAccount
         // Find service account by API key
         $serviceAccount = ServiceAccount::where('api_key', $apiKey)->first();
 
-        if (!$serviceAccount) {
+        if (! $serviceAccount) {
             return response()->json([
                 'message' => 'Invalid API key',
             ], 401);
         }
 
         // Check if service account is active
-        if (!$serviceAccount->is_active) {
+        if (! $serviceAccount->is_active) {
             return response()->json([
                 'message' => 'Service account is inactive',
             ], 403);
@@ -48,7 +48,7 @@ class ValidateServiceAccount
         }
 
         // Check if service account is valid
-        if (!$serviceAccount->isValid()) {
+        if (! $serviceAccount->isValid()) {
             return response()->json([
                 'message' => 'Service account is not valid',
             ], 403);

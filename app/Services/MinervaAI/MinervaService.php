@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\Log;
 class MinervaService
 {
     private string $provider;
+
     private string $apiKey;
+
     private string $model;
+
     private string $baseUrl;
 
     public function __construct()
@@ -264,9 +267,9 @@ class MinervaService
             }
         }
 
-        $basePrompt .= "Be helpful, concise, and actionable. When users ask questions, provide clear answers. ";
-        $basePrompt .= "When they need insights, analyze the data and provide meaningful observations. ";
-        $basePrompt .= "When they want to perform actions, guide them or execute commands if available.";
+        $basePrompt .= 'Be helpful, concise, and actionable. When users ask questions, provide clear answers. ';
+        $basePrompt .= 'When they need insights, analyze the data and provide meaningful observations. ';
+        $basePrompt .= 'When they want to perform actions, guide them or execute commands if available.';
 
         return $basePrompt;
     }

@@ -7,6 +7,7 @@ import { Activity, Bot, MessageSquare, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardStore } from '@/stores/dashboard';
 import { useContactsStore } from '@/stores/contacts';
+import { BookingTrendsChart } from '@/components/booking-trends-chart';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,7 +17,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
-    const { stats, recentActivity, loading: dashboardLoading, fetchAll } = useDashboardStore();
+    const { stats, recentActivity, trends, loading: dashboardLoading, fetchAll } = useDashboardStore();
     const { contacts, loading: contactsLoading, fetchContacts } = useContactsStore();
 
     useEffect(() => {
@@ -71,6 +72,12 @@ export default function Dashboard() {
                         value={stats?.active_conversations ?? 0}
                         loading={loading}
                     />
+                </div>
+
+                {/* 7-Day Booking Trends Chart */}
+                <div className="rounded-xl border border-sidebar-border bg-card p-6">
+                    <h2 className="mb-4 text-lg font-semibold">7-Day Booking Trends</h2>
+                    <BookingTrendsChart data={trends} loading={loading} />
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">

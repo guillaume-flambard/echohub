@@ -39,17 +39,19 @@ class RotateServiceAccountKey extends Command
 
         $id = $this->argument('id');
 
-        if (!$id) {
+        if (! $id) {
             // Show interactive list of service accounts
             $serviceAccounts = ServiceAccount::all();
 
             if ($serviceAccounts->isEmpty()) {
                 $this->error('No service accounts found.');
+
                 return 1;
             }
 
             $choices = $serviceAccounts->map(function ($sa) {
                 $status = $sa->isValid() ? '✓ Active' : '✗ Inactive';
+
                 return "{$sa->id}. {$sa->name} ({$status})";
             })->toArray();
 
@@ -65,14 +67,16 @@ class RotateServiceAccountKey extends Command
 
         $serviceAccount = ServiceAccount::find($id);
 
-        if (!$serviceAccount) {
+        if (! $serviceAccount) {
             $this->error("Service account with ID {$id} not found.");
+
             return 1;
         }
 
         // Confirm rotation
-        if (!$this->confirm("Rotate API key for '{$serviceAccount->name}'?")) {
+        if (! $this->confirm("Rotate API key for '{$serviceAccount->name}'?")) {
             $this->info('Key rotation cancelled.');
+
             return 0;
         }
 
@@ -100,6 +104,7 @@ class RotateServiceAccountKey extends Command
             return 0;
         } catch (\Exception $e) {
             $this->error("Failed to rotate key: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -113,13 +118,15 @@ class RotateServiceAccountKey extends Command
 
         if ($serviceAccounts->isEmpty()) {
             $this->error('No active service accounts found.');
+
             return 1;
         }
 
         $this->warn("This will rotate keys for {$serviceAccounts->count()} service account(s).");
 
-        if (!$this->confirm('Continue?')) {
+        if (! $this->confirm('Continue?')) {
             $this->info('Operation cancelled.');
+
             return 0;
         }
 
@@ -138,7 +145,7 @@ class RotateServiceAccountKey extends Command
             }
         }
 
-        if (!empty($rotatedKeys)) {
+        if (! empty($rotatedKeys)) {
             $this->newLine();
             $this->warn('New API Keys:');
             $this->newLine();
@@ -166,13 +173,15 @@ class RotateServiceAccountKey extends Command
 
         if ($serviceAccounts->isEmpty()) {
             $this->info('No expired service accounts found.');
+
             return 0;
         }
 
         $this->warn("Found {$serviceAccounts->count()} expired service account(s).");
 
-        if (!$this->confirm('Rotate keys for expired accounts?')) {
+        if (! $this->confirm('Rotate keys for expired accounts?')) {
             $this->info('Operation cancelled.');
+
             return 0;
         }
 
@@ -191,7 +200,7 @@ class RotateServiceAccountKey extends Command
             }
         }
 
-        if (!empty($rotatedKeys)) {
+        if (! empty($rotatedKeys)) {
             $this->newLine();
             $this->warn('New API Keys:');
             $this->newLine();

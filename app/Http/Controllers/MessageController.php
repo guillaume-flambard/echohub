@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 class MessageController extends Controller
 {
     use AuthorizesRequests;
+
     public function __construct(
         private InstanceManager $instanceManager,
         private MatrixService $matrixService
@@ -35,7 +36,7 @@ class MessageController extends Controller
         if ($contact->isApp()) {
             $app = $contact->app;
 
-            if (!$app) {
+            if (! $app) {
                 return response()->json([
                     'error' => 'App not found',
                 ], 404);
@@ -48,7 +49,7 @@ class MessageController extends Controller
                 $user->id
             );
 
-            if (!$response['success']) {
+            if (! $response['success']) {
                 return response()->json([
                     'error' => $response['error'] ?? 'Failed to send message',
                 ], 500);
@@ -82,13 +83,13 @@ class MessageController extends Controller
                 ],
                 'response' => [
                     'role' => 'info',
-                    'content' => 'Message sent to ' . $contact->name . '. Matrix integration is ready - they will receive this via Element Web or Matrix client.',
+                    'content' => 'Message sent to '.$contact->name.'. Matrix integration is ready - they will receive this via Element Web or Matrix client.',
                     'timestamp' => now()->toIso8601String(),
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Failed to send message: ' . $e->getMessage(),
+                'error' => 'Failed to send message: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -105,7 +106,7 @@ class MessageController extends Controller
         if ($contact->isApp()) {
             $app = $contact->app;
 
-            if (!$app) {
+            if (! $app) {
                 return response()->json([
                     'error' => 'App not found',
                 ], 404);
@@ -127,7 +128,7 @@ class MessageController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Failed to fetch history: ' . $e->getMessage(),
+                'error' => 'Failed to fetch history: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -141,7 +142,7 @@ class MessageController extends Controller
 
         $user = Auth::user();
 
-        if (!$contact->isApp()) {
+        if (! $contact->isApp()) {
             return response()->json([
                 'error' => 'Can only clear history for app contacts',
             ], 400);
@@ -149,7 +150,7 @@ class MessageController extends Controller
 
         $app = $contact->app;
 
-        if (!$app) {
+        if (! $app) {
             return response()->json([
                 'error' => 'App not found',
             ], 404);

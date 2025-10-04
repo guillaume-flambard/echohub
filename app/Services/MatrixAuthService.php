@@ -25,7 +25,7 @@ class MatrixAuthService
         // Register the user on Matrix
         $result = $this->matrixService->register($matrixUsername, $password, false);
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $result;
         }
 

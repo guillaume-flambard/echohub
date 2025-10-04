@@ -43,11 +43,11 @@ class ExternalApiController extends Controller
 
         $query = User::query();
 
-        if (!empty($validated['limit'])) {
+        if (! empty($validated['limit'])) {
             $query->limit($validated['limit']);
         }
 
-        if (!empty($validated['offset'])) {
+        if (! empty($validated['offset'])) {
             $query->offset($validated['offset']);
         }
 
@@ -79,7 +79,7 @@ class ExternalApiController extends Controller
 
         $query = Contact::where('user_id', $user->id);
 
-        if (!empty($validated['type'])) {
+        if (! empty($validated['type'])) {
             $query->where('type', $validated['type']);
         }
 

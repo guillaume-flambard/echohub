@@ -51,6 +51,6 @@ class AppAccessLog extends Model
      */
     public function failed(): bool
     {
-        return !$this->wasSuccessful();
+        return ! $this->wasSuccessful();
     }
 }

@@ -50,9 +50,10 @@ class InstanceManager
         ]);
 
         if ($response['success']) {
-            // Update conversation history
-            $history[] = ['role' => 'user', 'content' => $message];
-            $history[] = ['role' => 'assistant', 'content' => $response['response']];
+            // Update conversation history with timestamps
+            $timestamp = now()->toIso8601String();
+            $history[] = ['role' => 'user', 'content' => $message, 'timestamp' => $timestamp];
+            $history[] = ['role' => 'assistant', 'content' => $response['response'], 'timestamp' => $timestamp];
 
             // Keep only last 20 messages to prevent context from growing too large
             if (count($history) > 40) {

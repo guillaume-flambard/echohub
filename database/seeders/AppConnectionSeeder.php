@@ -18,7 +18,7 @@ class AppConnectionSeeder extends Seeder
                 'domain' => 'echotravels.app',
                 'matrix_user_id' => '@echotravel:echohub.local',
                 'app_url' => 'https://echotravels.app',
-                'service_api_key' => 'test_key_' . bin2hex(random_bytes(32)),
+                'service_api_key' => 'test_key_'.bin2hex(random_bytes(32)),
                 'status' => 'online',
                 'description' => 'Travel booking and management platform for ferry services in Thailand',
                 'capabilities' => [
@@ -53,7 +53,7 @@ class AppConnectionSeeder extends Seeder
                 'domain' => 'phangan.ai',
                 'matrix_user_id' => '@phangan.ai:echohub.local',
                 'app_url' => 'https://phangan.ai',
-                'service_api_key' => 'test_key_' . bin2hex(random_bytes(32)),
+                'service_api_key' => 'test_key_'.bin2hex(random_bytes(32)),
                 'status' => 'online',
                 'description' => 'AI-powered travel assistant for Koh Phangan',
                 'capabilities' => [
@@ -86,7 +86,7 @@ class AppConnectionSeeder extends Seeder
                 'domain' => '12go.echohub.local',
                 'matrix_user_id' => '@12go:echohub.local',
                 'app_url' => 'https://12go.echohub.local',
-                'service_api_key' => 'test_key_' . bin2hex(random_bytes(32)),
+                'service_api_key' => 'test_key_'.bin2hex(random_bytes(32)),
                 'status' => 'offline',
                 'description' => '12Go booking automation and processing system',
                 'capabilities' => [

@@ -68,7 +68,7 @@ class AppController extends Controller
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'domain' => 'sometimes|string|unique:apps,domain,' . $app->id,
+            'domain' => 'sometimes|string|unique:apps,domain,'.$app->id,
             'status' => 'sometimes|in:online,offline,degraded',
             'capabilities' => 'nullable|array',
             'api_config' => 'nullable|array',
