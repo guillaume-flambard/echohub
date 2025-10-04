@@ -28,6 +28,15 @@ class MinervaContext extends Model
     }
 
     /**
+     * Get the contact for this context
+     */
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'instance_id', 'matrix_id')
+            ->where('user_id', $this->user_id);
+    }
+
+    /**
      * Add a message to conversation history
      */
     public function addMessage(string $role, string $content): void
