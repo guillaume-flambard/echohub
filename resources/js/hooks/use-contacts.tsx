@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '@/bootstrap';
 import type { Contact } from '@/types';
 
 export function useContacts(type?: 'app' | 'human') {

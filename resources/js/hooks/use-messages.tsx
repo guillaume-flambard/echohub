@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '@/bootstrap';
 import type { Contact, Message, MinervaResponse } from '@/types';
 
 export function useMessages(contact: Contact | null) {
