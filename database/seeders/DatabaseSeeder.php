@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             AppConnectionSeeder::class,
             PermissionSeeder::class,
             ServiceAccountSeeder::class,
+            ContactSeeder::class,
         ]);
     }
 }
