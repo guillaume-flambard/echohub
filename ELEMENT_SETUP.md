@@ -4,19 +4,34 @@ EchoHub includes Element Web, the official Matrix client, for human-to-human mes
 
 ## Quick Start
 
-1. **Start Matrix services** (Synapse homeserver + Element Web):
+1. **Generate Synapse config** (first time only):
+   ```bash
+   # Create data directory
+   mkdir -p synapse/data
+
+   # Generate Synapse configuration
+   docker run --rm \
+     -v $(pwd)/synapse/data:/data \
+     -e SYNAPSE_SERVER_NAME=echohub.local \
+     -e SYNAPSE_REPORT_STATS=no \
+     matrixdotorg/synapse:latest generate
+   ```
+
+2. **Start Matrix services** (Synapse homeserver + Element Web + PostgreSQL):
    ```bash
    docker compose -f docker-compose.matrix.yml up -d
    ```
 
-2. **Access Element Web**:
-   - Open browser to: http://localhost:8009
-   - You should see the Element login page with "EchoHub Element" branding
-
-3. **Create your first user**:
+3. **Wait for services to start** (about 10-15 seconds):
    ```bash
-   # Register a new Matrix user via Synapse
-   docker exec -it echohub_synapse register_new_matrix_user \
+   # Check Synapse is ready
+   curl http://localhost:8008/_matrix/client/versions
+   ```
+
+4. **Create your first user**:
+   ```bash
+   # Register a new Matrix user via Synapse (remove -it flag)
+   docker exec echohub_synapse register_new_matrix_user \
      -u your_username \
      -p your_password \
      -a \
@@ -24,7 +39,11 @@ EchoHub includes Element Web, the official Matrix client, for human-to-human mes
      http://localhost:8008
    ```
 
-4. **Login to Element**:
+5. **Access Element Web**:
+   - Open browser to: http://localhost:8009
+   - You should see the Element login page
+
+6. **Login to Element**:
    - Username: `@your_username:echohub.local`
    - Password: `your_password`
    - Homeserver: Should auto-detect as `echohub.local`
