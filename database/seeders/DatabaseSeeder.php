@@ -24,5 +24,12 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        // Seed multi-app hub data
+        $this->call([
+            AppConnectionSeeder::class,
+            PermissionSeeder::class,
+            ServiceAccountSeeder::class,
+        ]);
     }
 }
