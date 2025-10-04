@@ -29,7 +29,6 @@ yarn-error.log
 
 # Matrix/Synapse data
 /synapse/data/*
-!/synapse/data/.gitkeep
 !/synapse/data/homeserver.yaml
 !/synapse/data/echohub.local.log.config
 /synapse/postgres

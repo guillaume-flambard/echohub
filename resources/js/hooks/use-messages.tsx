@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import axios from '@/bootstrap';
 import type { Contact, Message, MinervaResponse } from '@/types';
+import { useMatrixStore } from '@/stores/matrix';
 
 export function useMessages(contact: Contact | null) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const matrixStore = useMatrixStore();
 
     const fetchHistory = async () => {
         if (!contact) return;
@@ -15,8 +18,20 @@ export function useMessages(contact: Contact | null) {
         setError(null);
 
         try {
-            const response = await axios.get(`/api/contacts/${contact.id}/messages`);
-            setMessages(response.data.history || []);
+            // For human contacts, use Matrix
+            if (contact.type === 'human') {
+                const matrixMessages = matrixStore.getMessages(contact.matrix_id);
+                const formattedMessages: Message[] = matrixMessages.map((msg) => ({
+                    role: msg.sender === matrixStore.currentUserId ? 'user' : 'assistant',
+                    content: msg.content,
+                    timestamp: new Date(msg.timestamp).toISOString(),
+                }));
+                setMessages(formattedMessages);
+            } else {
+                // For app contacts, use API
+                const response = await axios.get(`/api/contacts/${contact.id}/messages`);
+                setMessages(response.data.history || []);
+            }
         } catch (err: any) {
             setError(err.message || 'Failed to fetch message history');
             console.error('Error fetching messages:', err);
@@ -32,22 +47,37 @@ export function useMessages(contact: Contact | null) {
         setError(null);
 
         try {
-            const response = await axios.post<MinervaResponse>(
-                `/api/contacts/${contact.id}/messages`,
-                { message: content }
-            );
+            // For human contacts, use Matrix
+            if (contact.type === 'human') {
+                await matrixStore.sendMessage(contact.matrix_id, content);
 
-            if (response.data.success) {
-                // Add both user message and AI response to the list
-                setMessages((prev) => [
-                    ...prev,
-                    response.data.message,
-                    response.data.response,
-                ]);
+                // Add user message immediately
+                const userMessage: Message = {
+                    role: 'user',
+                    content,
+                    timestamp: new Date().toISOString(),
+                };
+                setMessages((prev) => [...prev, userMessage]);
                 return true;
             } else {
-                setError(response.data.error || 'Failed to send message');
-                return false;
+                // For app contacts, use API
+                const response = await axios.post<MinervaResponse>(
+                    `/api/contacts/${contact.id}/messages`,
+                    { message: content }
+                );
+
+                if (response.data.success) {
+                    // Add both user message and AI response to the list
+                    setMessages((prev) => [
+                        ...prev,
+                        response.data.message,
+                        response.data.response,
+                    ]);
+                    return true;
+                } else {
+                    setError(response.data.error || 'Failed to send message');
+                    return false;
+                }
             }
         } catch (err: any) {
             setError(err.response?.data?.error || err.message || 'Failed to send message');
