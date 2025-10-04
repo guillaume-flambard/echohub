@@ -20,4 +20,48 @@ export default defineConfig({
     esbuild: {
         jsx: 'automatic',
     },
+    build: {
+        // Matrix SDK is large (~875 kB) due to encryption features - this is expected
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    // React core
+                    'react-vendor': ['react', 'react-dom'],
+
+                    // Inertia
+                    'inertia': ['@inertiajs/react'],
+
+                    // Charts library
+                    'recharts': ['recharts'],
+
+                    // Matrix SDK (large due to crypto features)
+                    'matrix-sdk': ['matrix-js-sdk'],
+
+                    // UI components
+                    'radix-ui': [
+                        '@radix-ui/react-avatar',
+                        '@radix-ui/react-checkbox',
+                        '@radix-ui/react-collapsible',
+                        '@radix-ui/react-dialog',
+                        '@radix-ui/react-dropdown-menu',
+                        '@radix-ui/react-label',
+                        '@radix-ui/react-navigation-menu',
+                        '@radix-ui/react-select',
+                        '@radix-ui/react-separator',
+                        '@radix-ui/react-slot',
+                        '@radix-ui/react-toggle',
+                        '@radix-ui/react-toggle-group',
+                        '@radix-ui/react-tooltip',
+                    ],
+
+                    // Icons
+                    'lucide': ['lucide-react'],
+
+                    // State management
+                    'zustand': ['zustand'],
+                },
+            },
+        },
+    },
 });
