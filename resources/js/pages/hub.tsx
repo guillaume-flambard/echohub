@@ -17,9 +17,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Hub() {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-    const { contacts, loading: contactsLoading } = useContacts();
-    const { messages, loading: messagesLoading, sending, sendMessage, clearHistory } =
-        useMessages(selectedContact);
+    const { contacts, loading: contactsLoading, error: contactsError } = useContacts();
+    const {
+        messages,
+        loading: messagesLoading,
+        sending,
+        error: messagesError,
+        sendMessage,
+        clearHistory,
+    } = useMessages(selectedContact);
 
     const handleSelectContact = (contact: Contact) => {
         setSelectedContact(contact);
@@ -47,6 +53,7 @@ export default function Hub() {
                         selectedContact={selectedContact}
                         onSelectContact={handleSelectContact}
                         loading={contactsLoading}
+                        error={contactsError}
                     />
                 </div>
 
@@ -57,6 +64,7 @@ export default function Hub() {
                         messages={messages}
                         loading={messagesLoading}
                         sending={sending}
+                        error={messagesError}
                         onSendMessage={sendMessage}
                         onClearHistory={handleClearHistory}
                     />

@@ -16,6 +16,7 @@ interface ChatViewProps {
     messages: Message[];
     loading: boolean;
     sending: boolean;
+    error: string | null;
     onSendMessage: (content: string) => Promise<boolean>;
     onClearHistory: () => Promise<boolean>;
 }
@@ -25,6 +26,7 @@ export function ChatView({
     messages,
     loading,
     sending,
+    error,
     onSendMessage,
     onClearHistory,
 }: ChatViewProps) {
@@ -94,6 +96,13 @@ export function ChatView({
                             <Skeleton className="h-16 w-3/4" />
                         </div>
                     ))}
+                </div>
+            ) : error ? (
+                <div className="flex flex-1 items-center justify-center p-4">
+                    <div className="max-w-md rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
+                        <p className="font-medium text-destructive">Error loading messages</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+                    </div>
                 </div>
             ) : (
                 <MessageList messages={messages} contact={contact} />

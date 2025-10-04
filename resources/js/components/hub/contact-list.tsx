@@ -11,6 +11,7 @@ interface ContactListProps {
     selectedContact: Contact | null;
     onSelectContact: (contact: Contact) => void;
     loading?: boolean;
+    error?: string | null;
 }
 
 export function ContactList({
@@ -18,6 +19,7 @@ export function ContactList({
     selectedContact,
     onSelectContact,
     loading = false,
+    error = null,
 }: ContactListProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState<'all' | 'app' | 'human'>('all');
@@ -43,6 +45,17 @@ export function ContactList({
                 {Array.from({ length: 6 }).map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
                 ))}
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex h-full items-center justify-center p-4">
+                <div className="max-w-sm rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
+                    <p className="font-medium text-destructive">Error loading contacts</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+                </div>
             </div>
         );
     }
