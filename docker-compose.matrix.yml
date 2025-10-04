@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   synapse:
     image: matrixdotorg/synapse:latest
@@ -37,6 +35,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - matrix
+
+  element:
+    image: vectorim/element-web:latest
+    container_name: echohub_element
+    restart: unless-stopped
+    ports:
+      - "8009:80"
+    volumes:
+      - ./element/config.json:/app/config.json:ro
+    depends_on:
+      - synapse
     networks:
       - matrix
 
