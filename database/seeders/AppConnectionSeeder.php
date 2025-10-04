@@ -16,6 +16,7 @@ class AppConnectionSeeder extends Seeder
             [
                 'name' => 'EchoTravel',
                 'domain' => 'echotravels.app',
+                'matrix_user_id' => '@echotravel:echohub.local',
                 'app_url' => 'https://echotravels.app',
                 'service_api_key' => 'test_key_' . bin2hex(random_bytes(32)),
                 'status' => 'online',
@@ -50,6 +51,7 @@ class AppConnectionSeeder extends Seeder
             [
                 'name' => 'Phangan.AI',
                 'domain' => 'phangan.ai',
+                'matrix_user_id' => '@phangan.ai:echohub.local',
                 'app_url' => 'https://phangan.ai',
                 'service_api_key' => 'test_key_' . bin2hex(random_bytes(32)),
                 'status' => 'online',
@@ -82,6 +84,7 @@ class AppConnectionSeeder extends Seeder
             [
                 'name' => '12Go Automation',
                 'domain' => '12go.echohub.local',
+                'matrix_user_id' => '@12go:echohub.local',
                 'app_url' => 'https://12go.echohub.local',
                 'service_api_key' => 'test_key_' . bin2hex(random_bytes(32)),
                 'status' => 'offline',
