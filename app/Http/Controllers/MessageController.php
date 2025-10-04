@@ -6,11 +6,13 @@ use App\Models\App;
 use App\Models\Contact;
 use App\Services\MatrixService;
 use App\Services\MinervaAI\InstanceManager;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
+    use AuthorizesRequests;
     public function __construct(
         private InstanceManager $instanceManager,
         private MatrixService $matrixService

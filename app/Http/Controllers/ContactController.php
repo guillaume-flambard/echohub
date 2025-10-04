@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ContactController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Get all contacts for the authenticated user
      */
