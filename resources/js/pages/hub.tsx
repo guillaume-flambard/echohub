@@ -1,11 +1,11 @@
 import AppLayout from '@/layouts/app-layout';
 import { ChatView } from '@/components/hub/chat-view';
 import { ContactList } from '@/components/hub/contact-list';
-import { useContacts } from '@/hooks/use-contacts';
-import { useMessages } from '@/hooks/use-messages';
+import { useContactsStore } from '@/stores/contacts';
+import { useMessagesStore } from '@/stores/messages';
 import { type BreadcrumbItem, type Contact } from '@/types';
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { hub } from '@/routes';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -17,28 +17,47 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Hub() {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-    const { contacts, loading: contactsLoading, error: contactsError } = useContacts();
-    const {
-        messages,
-        loading: messagesLoading,
-        sending,
-        error: messagesError,
-        sendMessage,
-        clearHistory,
-    } = useMessages(selectedContact);
+
+    // Zustand stores
+    const { contacts, loading: contactsLoading, error: contactsError, fetchContacts } = useContactsStore();
+    const { messages, loading, sending, error: messagesError, fetchHistory, sendMessage, clearHistory } = useMessagesStore();
+
+    // Fetch contacts on mount
+    useEffect(() => {
+        fetchContacts();
+    }, [fetchContacts]);
+
+    // Fetch messages when contact changes
+    useEffect(() => {
+        if (selectedContact) {
+            fetchHistory(selectedContact);
+        }
+    }, [selectedContact, fetchHistory]);
+
+    const currentMessages = selectedContact ? messages[selectedContact.id] || [] : [];
+    const messagesLoading = selectedContact ? loading[selectedContact.id] || false : false;
+    const isSending = selectedContact ? sending[selectedContact.id] || false : false;
 
     const handleSelectContact = (contact: Contact) => {
         setSelectedContact(contact);
     };
 
+    const handleSendMessage = async (content: string) => {
+        if (!selectedContact) return false;
+        return await sendMessage(selectedContact, content);
+    };
+
     const handleClearHistory = async () => {
+        if (!selectedContact) return false;
+
         const confirmed = window.confirm(
             'Are you sure you want to clear the conversation history? This action cannot be undone.'
         );
 
         if (confirmed) {
-            await clearHistory();
+            return await clearHistory(selectedContact);
         }
+        return false;
     };
 
     return (
@@ -61,11 +80,11 @@ export default function Hub() {
                 <div className="flex-1 bg-background">
                     <ChatView
                         contact={selectedContact}
-                        messages={messages}
+                        messages={currentMessages}
                         loading={messagesLoading}
-                        sending={sending}
+                        sending={isSending}
                         error={messagesError}
-                        onSendMessage={sendMessage}
+                        onSendMessage={handleSendMessage}
                         onClearHistory={handleClearHistory}
                     />
                 </div>

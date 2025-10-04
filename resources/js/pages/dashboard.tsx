@@ -1,11 +1,12 @@
 import AppLayout from '@/layouts/app-layout';
 import { dashboard, hub } from '@/routes';
-import { type BreadcrumbItem, type Contact } from '@/types';
+import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import axios from '@/bootstrap';
+import { useEffect } from 'react';
 import { Activity, Bot, MessageSquare, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useDashboardStore } from '@/stores/dashboard';
+import { useContactsStore } from '@/stores/contacts';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -14,53 +15,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface DashboardStats {
-    total_apps: number;
-    apps_online: number;
-    messages_today: number;
-    active_conversations: number;
-}
-
-interface RecentMessage {
-    contact: {
-        id: number;
-        name: string;
-        type: string;
-    };
-    message: {
-        role: 'user' | 'assistant';
-        content: string;
-        timestamp: string;
-    };
-}
-
 export default function Dashboard() {
-    const [stats, setStats] = useState<DashboardStats | null>(null);
-    const [recentActivity, setRecentActivity] = useState<RecentMessage[]>([]);
-    const [contacts, setContacts] = useState<Contact[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { stats, recentActivity, loading: dashboardLoading, fetchAll } = useDashboardStore();
+    const { contacts, loading: contactsLoading, fetchContacts } = useContactsStore();
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const [statsRes, activityRes, contactsRes] = await Promise.all([
-                    axios.get('/api/dashboard/stats'),
-                    axios.get('/api/dashboard/activity'),
-                    axios.get('/api/contacts', { params: { type: 'app' } }),
-                ]);
+        fetchAll();
+        fetchContacts('app');
+    }, [fetchAll, fetchContacts]);
 
-                setStats(statsRes.data);
-                setRecentActivity(activityRes.data.recent_activity || []);
-                setContacts(contactsRes.data.contacts || []);
-            } catch (error) {
-                console.error('Failed to fetch dashboard data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDashboardData();
-    }, []);
+    const loading = dashboardLoading || contactsLoading;
 
     const formatTime = (timestamp: string) => {
         const date = new Date(timestamp);
