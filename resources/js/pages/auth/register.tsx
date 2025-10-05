@@ -13,21 +13,21 @@ import AuthLayout from '@/layouts/auth-layout';
 export default function Register() {
     return (
         <AuthLayout
-            title="Create an account"
-            description="Enter your details below to create your account"
+            title="Create your account"
+            description="Get started with EchoHub in seconds"
         >
             <Head title="Register" />
             <Form
                 {...RegisteredUserController.store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
-                className="flex flex-col gap-6"
+                className="space-y-6"
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Full name</Label>
                                 <Input
                                     id="name"
                                     type="text"
@@ -36,16 +36,14 @@ export default function Register() {
                                     tabIndex={1}
                                     autoComplete="name"
                                     name="name"
-                                    placeholder="Full name"
+                                    placeholder="John Doe"
+                                    className="h-11"
                                 />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
+                                <InputError message={errors.name} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -53,12 +51,13 @@ export default function Register() {
                                     tabIndex={2}
                                     autoComplete="email"
                                     name="email"
-                                    placeholder="email@example.com"
+                                    placeholder="your@email.com"
+                                    className="h-11"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="password">Password</Label>
                                 <Input
                                     id="password"
@@ -67,12 +66,16 @@ export default function Register() {
                                     tabIndex={3}
                                     autoComplete="new-password"
                                     name="password"
-                                    placeholder="Password"
+                                    placeholder="••••••••"
+                                    className="h-11"
                                 />
                                 <InputError message={errors.password} />
+                                <p className="text-xs text-muted-foreground">
+                                    Must be at least 8 characters
+                                </p>
                             </div>
 
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="password_confirmation">
                                     Confirm password
                                 </Label>
@@ -83,30 +86,52 @@ export default function Register() {
                                     tabIndex={4}
                                     autoComplete="new-password"
                                     name="password_confirmation"
-                                    placeholder="Confirm password"
+                                    placeholder="••••••••"
+                                    className="h-11"
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
                                 />
                             </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-2 w-full"
-                                tabIndex={5}
-                                data-test="register-user-button"
-                            >
-                                {processing && (
-                                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                                )}
-                                Create account
-                            </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
-                            Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
-                                Log in
+                        <Button
+                            type="submit"
+                            className="w-full h-11"
+                            tabIndex={5}
+                            data-test="register-user-button"
+                        >
+                            {processing && (
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                            )}
+                            {processing ? 'Creating account...' : 'Create account'}
+                        </Button>
+
+                        <div className="text-xs text-center text-muted-foreground">
+                            By creating an account, you agree to our{' '}
+                            <TextLink href="#" className="hover:text-primary">
+                                Terms of Service
+                            </TextLink>{' '}
+                            and{' '}
+                            <TextLink href="#" className="hover:text-primary">
+                                Privacy Policy
+                            </TextLink>
+                        </div>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-border" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                    Already have an account?
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="text-center">
+                            <TextLink href={login()} tabIndex={6} className="text-sm">
+                                Log in instead
                             </TextLink>
                         </div>
                     </>
