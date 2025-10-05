@@ -38,12 +38,12 @@ if [ "$ENV" == "production" ]; then
     APP_DEBUG="false"
 elif [ "$ENV" == "staging" ]; then
     DB_NAME="echohub_staging"
-    APP_URL="https://staging.hub.echotravel.app"
+    APP_URL="https://hub-staging.echotravel.app"
     APP_ENV="staging"
     APP_DEBUG="true"
 else
     DB_NAME="echohub_development"
-    APP_URL="https://dev.hub.echotravel.app"
+    APP_URL="https://hub-dev.echotravel.app"
     APP_ENV="local"
     APP_DEBUG="true"
 fi

@@ -61,8 +61,8 @@ echo -e "${YELLOW}Enabling Nginx sites (HTTP only for now)...${NC}"
 for env in production staging development; do
     case $env in
         production) domain="hub.echotravel.app" ;;
-        staging) domain="staging.hub.echotravel.app" ;;
-        development) domain="dev.hub.echotravel.app" ;;
+        staging) domain="hub-staging.echotravel.app" ;;
+        development) domain="hub-dev.echotravel.app" ;;
     esac
 
     sudo tee /etc/nginx/sites-available/echohub-${env}-temp > /dev/null <<EOF
@@ -98,8 +98,8 @@ echo "This will request Let's Encrypt certificates for all domains..."
 
 # Install certificates
 sudo certbot --nginx -d hub.echotravel.app --non-interactive --agree-tos --email memo@echotravel.app --redirect || true
-sudo certbot --nginx -d staging.hub.echotravel.app --non-interactive --agree-tos --email memo@echotravel.app --redirect || true
-sudo certbot --nginx -d dev.hub.echotravel.app --non-interactive --agree-tos --email memo@echotravel.app --redirect || true
+sudo certbot --nginx -d hub-staging.echotravel.app --non-interactive --agree-tos --email memo@echotravel.app --redirect || true
+sudo certbot --nginx -d hub-dev.echotravel.app --non-interactive --agree-tos --email memo@echotravel.app --redirect || true
 
 # Now enable the real configs
 echo -e "${YELLOW}🔄 Enabling production Nginx configs...${NC}"
@@ -141,5 +141,5 @@ echo "2. Trigger GitHub Actions deployment"
 echo ""
 echo -e "${YELLOW}Environment URLs:${NC}"
 echo "  Production:  https://hub.echotravel.app"
-echo "  Staging:     https://staging.hub.echotravel.app"
-echo "  Development: https://dev.hub.echotravel.app"
+echo "  Staging:     https://hub-staging.echotravel.app"
+echo "  Development: https://hub-dev.echotravel.app"

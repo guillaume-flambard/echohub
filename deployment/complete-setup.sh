@@ -61,13 +61,13 @@ for env in staging production development; do
             DB_DATABASE="echohub_production"
             ;;
         staging)
-            APP_URL="https://staging.hub.echotravel.app"
+            APP_URL="https://hub-staging.echotravel.app"
             APP_ENV="staging"
             APP_DEBUG="true"
             DB_DATABASE="echohub_staging"
             ;;
         development)
-            APP_URL="https://dev.hub.echotravel.app"
+            APP_URL="https://hub-dev.echotravel.app"
             APP_ENV="local"
             APP_DEBUG="true"
             DB_DATABASE="echohub_development"
@@ -149,8 +149,8 @@ echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━
 echo ""
 echo -e "${YELLOW}Your sites are now available at:${NC}"
 echo "  Production:  https://hub.echotravel.app"
-echo "  Staging:     https://staging.hub.echotravel.app"
-echo "  Development: https://dev.hub.echotravel.app"
+echo "  Staging:     https://hub-staging.echotravel.app"
+echo "  Development: https://hub-dev.echotravel.app"
 echo ""
 echo -e "${YELLOW}GitHub Actions is configured for automatic deployments:${NC}"
 echo "  • Push to 'development' branch → Deploys to staging"
