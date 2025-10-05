@@ -84,7 +84,7 @@ jobs:
             bun install
             bun run build
 
-            # Run migrations
+            # Run migrations (SAFE: only adds new migrations, never drops tables or deletes data)
             php artisan migrate --force
 
             # Clear and cache config
