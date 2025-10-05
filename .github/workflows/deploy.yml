@@ -101,12 +101,16 @@ jobs:
             # Set permissions
             sudo chown -R www-data:www-data storage bootstrap/cache database
             sudo chmod -R 775 storage bootstrap/cache
+            sudo chmod 775 database
 
-            # Fix database permissions if using SQLite
-            if [ -f database/*.sqlite ]; then
-              sudo chmod 664 database/*.sqlite
-              sudo chown www-data:www-data database/*.sqlite
-            fi
+            # Fix database permissions for SQLite files
+            for dbfile in database/*.sqlite; do
+              if [ -f "$dbfile" ]; then
+                sudo chmod 664 "$dbfile"
+                sudo chown www-data:www-data "$dbfile"
+                echo "Fixed permissions for $dbfile"
+              fi
+            done
 
             # Restart services
             sudo systemctl reload php8.2-fpm

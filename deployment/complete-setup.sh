@@ -126,8 +126,14 @@ for env in staging production development; do
     echo -e "${YELLOW}Setting permissions...${NC}"
     sudo chown -R www-data:www-data storage bootstrap/cache database
     sudo chmod -R 775 storage bootstrap/cache
-    sudo chmod -R 664 database/$DB_DATABASE.sqlite
-    sudo chown www-data:www-data database/$DB_DATABASE.sqlite
+    sudo chmod 775 database
+
+    # Fix SQLite database file permissions
+    if [ -f database/$DB_DATABASE.sqlite ]; then
+        sudo chmod 664 database/$DB_DATABASE.sqlite
+        sudo chown www-data:www-data database/$DB_DATABASE.sqlite
+        echo "Fixed permissions for database/$DB_DATABASE.sqlite"
+    fi
 
     echo -e "${GREEN}✅ ${env} environment configured!${NC}"
 done
