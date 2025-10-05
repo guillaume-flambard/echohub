@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Contact } from '@/types';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Circle, Search, User } from 'lucide-react';
 import { useState } from 'react';
 
@@ -101,43 +102,82 @@ export function ContactList({
             </div>
 
             <div className="flex-1 overflow-y-auto">
-                {appContacts.length > 0 && (
-                    <div className="px-2 pt-2 pb-1">
-                        <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Apps
-                        </div>
-                        {appContacts.map((contact) => (
-                            <ContactItem
-                                key={contact.id}
-                                contact={contact}
-                                isSelected={selectedContact?.id === contact.id}
-                                onClick={() => onSelectContact(contact)}
-                            />
-                        ))}
-                    </div>
-                )}
+                <AnimatePresence mode="wait">
+                    {filteredContacts.length === 0 ? (
+                        <motion.div
+                            key="no-contacts"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="flex h-full items-center justify-center p-3 text-center text-xs text-muted-foreground"
+                        >
+                            No contacts found
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="contacts-list"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            {appContacts.length > 0 && (
+                                <motion.div
+                                    className="px-2 pt-2 pb-1"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                >
+                                    <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Apps
+                                    </div>
+                                    {appContacts.map((contact, index) => (
+                                        <motion.div
+                                            key={contact.id}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 20 }}
+                                            transition={{ delay: index * 0.05 }}
+                                        >
+                                            <ContactItem
+                                                contact={contact}
+                                                isSelected={selectedContact?.id === contact.id}
+                                                onClick={() => onSelectContact(contact)}
+                                            />
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            )}
 
-                {humanContacts.length > 0 && (
-                    <div className="px-2 pt-2 pb-1">
-                        <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Humans
-                        </div>
-                        {humanContacts.map((contact) => (
-                            <ContactItem
-                                key={contact.id}
-                                contact={contact}
-                                isSelected={selectedContact?.id === contact.id}
-                                onClick={() => onSelectContact(contact)}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {filteredContacts.length === 0 && (
-                    <div className="flex h-full items-center justify-center p-3 text-center text-xs text-muted-foreground">
-                        No contacts found
-                    </div>
-                )}
+                            {humanContacts.length > 0 && (
+                                <motion.div
+                                    className="px-2 pt-2 pb-1"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: appContacts.length > 0 ? 0.2 : 0.1 }}
+                                >
+                                    <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Humans
+                                    </div>
+                                    {humanContacts.map((contact, index) => (
+                                        <motion.div
+                                            key={contact.id}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 20 }}
+                                            transition={{ delay: index * 0.05 }}
+                                        >
+                                            <ContactItem
+                                                contact={contact}
+                                                isSelected={selectedContact?.id === contact.id}
+                                                onClick={() => onSelectContact(contact)}
+                                            />
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
@@ -158,13 +198,20 @@ function ContactItem({ contact, isSelected, onClick }: ContactItemProps) {
               : 'bg-gray-400';
 
     return (
-        <button
+        <motion.button
             onClick={onClick}
-            className={`flex w-full items-center gap-2 rounded-md p-2 text-left transition-colors hover:bg-accent ${
+            className={`flex w-full items-center gap-2 rounded-md p-2 text-left ${
                 isSelected ? 'bg-accent' : ''
             }`}
+            whileHover={{ scale: 1.02, backgroundColor: 'hsl(var(--accent))' }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         >
-            <div className="relative">
+            <motion.div
+                className="relative"
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            >
                 <div className="flex size-8 items-center justify-center rounded-full bg-primary/10">
                     {contact.type === 'app' ? (
                         <Bot className="size-4 text-primary" />
@@ -173,12 +220,23 @@ function ContactItem({ contact, isSelected, onClick }: ContactItemProps) {
                     )}
                 </div>
                 {contact.type === 'app' && (
-                    <Circle
-                        className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background ${statusColor}`}
-                        fill="currentColor"
-                    />
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.2, 1],
+                        }}
+                        transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                        }}
+                    >
+                        <Circle
+                            className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background ${statusColor}`}
+                            fill="currentColor"
+                        />
+                    </motion.div>
                 )}
-            </div>
+            </motion.div>
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                     <p className="truncate text-sm font-medium">{contact.name}</p>
@@ -194,6 +252,6 @@ function ContactItem({ contact, isSelected, onClick }: ContactItemProps) {
                     </p>
                 )}
             </div>
-        </button>
+        </motion.button>
     );
 }
