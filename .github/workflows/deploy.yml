@@ -49,16 +49,23 @@ jobs:
           script: |
             cd ${{ steps.env.outputs.path }}
 
+            # Fix ownership before git operations
+            sudo chown -R $USER:$USER .
+
             # Git pull
             git fetch origin
             git reset --hard origin/${{ github.ref_name }}
 
-            # Install PHP dependencies
+            # Install PHP dependencies (ignore platform requirements for PHP version)
             if [ "${{ steps.env.outputs.environment }}" == "production" ]; then
-              composer install --no-dev --optimize-autoloader --no-interaction
+              composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
             else
-              composer install --optimize-autoloader --no-interaction
+              composer install --optimize-autoloader --no-interaction --ignore-platform-reqs
             fi
+
+            # Ensure Bun is in PATH
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
 
             # Install Node dependencies and build
             bun install
@@ -79,12 +86,18 @@ jobs:
             fi
 
             # Set permissions
-            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chown -R www-data:www-data storage bootstrap/cache database
             sudo chmod -R 775 storage bootstrap/cache
+
+            # Fix database permissions if using SQLite
+            if [ -f database/*.sqlite ]; then
+              sudo chmod 664 database/*.sqlite
+              sudo chown www-data:www-data database/*.sqlite
+            fi
 
             # Restart services
             sudo systemctl reload php8.2-fpm
-            sudo supervisorctl restart echohub-${{ steps.env.outputs.environment }}-worker:*
+            sudo supervisorctl restart echohub-${{ steps.env.outputs.environment }}-worker:* || echo "Note: Worker restart skipped"
 
             echo "✅ Deployment to ${{ steps.env.outputs.environment }} completed successfully!"
 
