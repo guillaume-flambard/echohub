@@ -136,9 +136,11 @@ done
 echo ""
 echo -e "${YELLOW}Restarting services...${NC}"
 sudo systemctl reload php8.2-fpm
-sudo supervisorctl reread
-sudo supervisorctl update
-sudo supervisorctl restart all
+
+echo -e "${YELLOW}Updating Supervisor...${NC}"
+sudo supervisorctl reread || echo "Note: Supervisor reread failed (may not be critical)"
+sudo supervisorctl update || echo "Note: Supervisor update failed (may not be critical)"
+sudo supervisorctl restart all || echo "Note: Supervisor restart failed (workers may need manual restart later)"
 
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
