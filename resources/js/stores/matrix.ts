@@ -123,7 +123,7 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
 
         try {
             // Find or create room with this contact
-            let roomId = await findOrCreateDirectRoom(client, contactMatrixId);
+            const roomId = await findOrCreateDirectRoom(client, contactMatrixId);
 
             // Send message
             await client.sendTextMessage(roomId, message);

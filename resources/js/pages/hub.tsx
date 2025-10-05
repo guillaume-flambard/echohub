@@ -27,6 +27,19 @@ export default function Hub() {
         fetchContacts();
     }, [fetchContacts]);
 
+    // Restore selected contact from localStorage after contacts are loaded
+    useEffect(() => {
+        if (contacts.length > 0 && !selectedContact) {
+            const savedContactId = localStorage.getItem('hub_selected_contact_id');
+            if (savedContactId) {
+                const contact = contacts.find(c => c.id === parseInt(savedContactId));
+                if (contact) {
+                    setSelectedContact(contact);
+                }
+            }
+        }
+    }, [contacts, selectedContact]);
+
     // Fetch messages when contact changes
     useEffect(() => {
         if (selectedContact) {
@@ -40,6 +53,8 @@ export default function Hub() {
 
     const handleSelectContact = (contact: Contact) => {
         setSelectedContact(contact);
+        // Persist selected contact to localStorage
+        localStorage.setItem('hub_selected_contact_id', contact.id.toString());
     };
 
     const handleSendMessage = async (content: string) => {

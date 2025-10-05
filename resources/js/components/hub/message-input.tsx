@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import type { Contact } from '@/types';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Paperclip, Send } from 'lucide-react';
 import { useState, type FormEvent, type KeyboardEvent } from 'react';
 
 interface MessageInputProps {
@@ -31,7 +30,7 @@ export function MessageInput({ onSend, disabled = false, contact }: MessageInput
     const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleSend(e as any);
+            void handleSend(e as unknown as FormEvent);
         }
     };
 
@@ -41,33 +40,53 @@ export function MessageInput({ onSend, disabled = false, contact }: MessageInput
             : `Message ${contact.name}...`;
 
     return (
-        <form onSubmit={handleSend} className="border-t border-sidebar-border p-4">
-            <div className="flex gap-2">
-                <Textarea
+        <form
+            onSubmit={handleSend}
+            className="border-t border-sidebar-border p-3"
+        >
+            <div className="relative rounded-3xl border border-input bg-background shadow-sm transition-colors focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20">
+                <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={placeholder}
                     disabled={disabled || isSending}
-                    className="min-h-[60px] max-h-[200px] resize-none"
-                    rows={2}
+                    className="w-full resize-none border-0 bg-transparent px-4 pt-3 pb-12 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    rows={1}
                 />
-                <Button
-                    type="submit"
-                    disabled={!message.trim() || disabled || isSending}
-                    size="icon"
-                    className="size-[60px] shrink-0"
-                >
-                    {isSending ? (
-                        <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                        <Send className="size-4" />
-                    )}
-                </Button>
+
+                {/* Action Bar */}
+                <div className="flex items-center justify-between border-t border-border/50 px-3 py-1.5">
+                    <div className="flex items-center gap-1">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                        >
+                            <Paperclip className="h-3.5 w-3.5" />
+                        </Button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground">
+                            Press Enter to send
+                        </p>
+                        <Button
+                            type="submit"
+                            disabled={!message.trim() || disabled || isSending}
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                        >
+                            {isSending ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                                <Send className="h-3.5 w-3.5" />
+                            )}
+                        </Button>
+                    </div>
+                </div>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-                Press Enter to send, Shift+Enter for new line
-            </p>
         </form>
     );
 }

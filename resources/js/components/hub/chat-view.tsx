@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Contact, Message } from '@/types';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, MoreVertical, Trash2, User } from 'lucide-react';
 import { MessageInput } from './message-input';
 import { MessageList } from './message-list';
@@ -33,17 +34,24 @@ export function ChatView({
     if (!contact) {
         return (
             <div className="flex h-full items-center justify-center">
-                <div className="text-center">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-center"
+                >
                     <div className="mb-4 flex justify-center">
                         <div className="flex size-16 items-center justify-center rounded-full bg-primary/10">
                             <Bot className="size-8 text-primary" />
                         </div>
                     </div>
-                    <h3 className="text-lg font-semibold">Welcome to EchoHub</h3>
+                    <h3 className="text-lg font-semibold">
+                        Welcome to EchoHub
+                    </h3>
                     <p className="mt-2 text-sm text-muted-foreground">
                         Select a contact to start chatting with Minerva AI
                     </p>
-                </div>
+                </motion.div>
             </div>
         );
     }
@@ -51,7 +59,13 @@ export function ChatView({
     return (
         <div className="flex h-full flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-sidebar-border p-4">
+            <motion.div
+                key={contact.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-between border-b border-sidebar-border p-4"
+            >
                 <div className="flex items-center gap-3">
                     <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
                         {contact.type === 'app' ? (
@@ -86,27 +100,46 @@ export function ChatView({
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )}
-            </div>
+            </motion.div>
 
             {/* Messages */}
-            {loading ? (
-                <div className="flex-1 space-y-4 p-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className={i % 2 === 0 ? 'flex justify-end' : ''}>
-                            <Skeleton className="h-16 w-3/4" />
+            <AnimatePresence mode="wait">
+                {loading ? (
+                    <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex-1 space-y-4 p-4"
+                    >
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className={i % 2 === 0 ? 'flex justify-end' : ''}
+                            >
+                                <Skeleton className="h-16 w-3/4" />
+                            </div>
+                        ))}
+                    </motion.div>
+                ) : error ? (
+                    <motion.div
+                        key="error"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-1 items-center justify-center p-4"
+                    >
+                        <div className="max-w-md rounded-2xl border border-destructive/50 bg-destructive/10 p-4 text-center">
+                            <p className="font-medium text-destructive">Error loading messages</p>
+                            <p className="mt-1 text-sm text-muted-foreground">{error}</p>
                         </div>
-                    ))}
-                </div>
-            ) : error ? (
-                <div className="flex flex-1 items-center justify-center p-4">
-                    <div className="max-w-md rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-                        <p className="font-medium text-destructive">Error loading messages</p>
-                        <p className="mt-1 text-sm text-muted-foreground">{error}</p>
-                    </div>
-                </div>
-            ) : (
-                <MessageList messages={messages} contact={contact} />
-            )}
+                    </motion.div>
+                ) : (
+                    <MessageList key="messages" messages={messages} contact={contact} />
+                )}
+            </AnimatePresence>
 
             {/* Input */}
             <MessageInput onSend={onSendMessage} disabled={sending} contact={contact} />

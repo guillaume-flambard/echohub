@@ -200,10 +200,9 @@ function ContactItem({ contact, isSelected, onClick }: ContactItemProps) {
     return (
         <motion.button
             onClick={onClick}
-            className={`flex w-full items-center gap-2 rounded-md p-2 text-left ${
-                isSelected ? 'bg-accent' : ''
+            className={`flex w-full items-center gap-2 rounded-md p-2 text-left transition-colors ${
+                isSelected ? 'bg-accent' : 'hover:bg-accent'
             }`}
-            whileHover={{ scale: 1.02, backgroundColor: 'hsl(var(--accent))' }}
             whileTap={{ scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         >
