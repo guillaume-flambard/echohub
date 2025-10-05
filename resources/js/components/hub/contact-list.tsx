@@ -35,15 +35,15 @@ export function ContactList({
 
     if (loading) {
         return (
-            <div className="flex h-full flex-col gap-4 p-4">
-                <Skeleton className="h-10 w-full" />
-                <div className="flex gap-2">
-                    <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-20" />
+            <div className="flex h-full flex-col gap-3 p-3">
+                <Skeleton className="h-8 w-full" />
+                <div className="flex gap-1.5">
+                    <Skeleton className="h-7 w-12" />
+                    <Skeleton className="h-7 w-12" />
+                    <Skeleton className="h-7 w-16" />
                 </div>
-                {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-full" />
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
                 ))}
             </div>
         );
@@ -62,21 +62,22 @@ export function ContactList({
 
     return (
         <div className="flex h-full flex-col">
-            <div className="border-b border-sidebar-border p-4">
+            <div className="border-b border-sidebar-border p-3">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         placeholder="Search contacts..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
+                        className="h-8 pl-8 text-sm"
                     />
                 </div>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-2 flex gap-1.5">
                     <Button
                         variant={filterType === 'all' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setFilterType('all')}
+                        className="h-7 text-xs"
                     >
                         All
                     </Button>
@@ -84,6 +85,7 @@ export function ContactList({
                         variant={filterType === 'app' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setFilterType('app')}
+                        className="h-7 text-xs"
                     >
                         Apps
                     </Button>
@@ -91,6 +93,7 @@ export function ContactList({
                         variant={filterType === 'human' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setFilterType('human')}
+                        className="h-7 text-xs"
                     >
                         Humans
                     </Button>
@@ -99,8 +102,8 @@ export function ContactList({
 
             <div className="flex-1 overflow-y-auto">
                 {appContacts.length > 0 && (
-                    <div className="p-2">
-                        <div className="mb-2 px-2 text-xs font-semibold uppercase text-muted-foreground">
+                    <div className="px-2 pt-2 pb-1">
+                        <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                             Apps
                         </div>
                         {appContacts.map((contact) => (
@@ -115,8 +118,8 @@ export function ContactList({
                 )}
 
                 {humanContacts.length > 0 && (
-                    <div className="p-2">
-                        <div className="mb-2 px-2 text-xs font-semibold uppercase text-muted-foreground">
+                    <div className="px-2 pt-2 pb-1">
+                        <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                             Humans
                         </div>
                         {humanContacts.map((contact) => (
@@ -131,7 +134,7 @@ export function ContactList({
                 )}
 
                 {filteredContacts.length === 0 && (
-                    <div className="flex h-full items-center justify-center p-4 text-center text-sm text-muted-foreground">
+                    <div className="flex h-full items-center justify-center p-3 text-center text-xs text-muted-foreground">
                         No contacts found
                     </div>
                 )}
@@ -157,36 +160,36 @@ function ContactItem({ contact, isSelected, onClick }: ContactItemProps) {
     return (
         <button
             onClick={onClick}
-            className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent ${
+            className={`flex w-full items-center gap-2 rounded-md p-2 text-left transition-colors hover:bg-accent ${
                 isSelected ? 'bg-accent' : ''
             }`}
         >
             <div className="relative">
-                <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
+                <div className="flex size-8 items-center justify-center rounded-full bg-primary/10">
                     {contact.type === 'app' ? (
-                        <Bot className="size-5 text-primary" />
+                        <Bot className="size-4 text-primary" />
                     ) : (
-                        <User className="size-5 text-primary" />
+                        <User className="size-4 text-primary" />
                     )}
                 </div>
                 {contact.type === 'app' && (
                     <Circle
-                        className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-background ${statusColor}`}
+                        className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background ${statusColor}`}
                         fill="currentColor"
                     />
                 )}
             </div>
             <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                    <p className="truncate font-medium">{contact.name}</p>
+                <div className="flex items-center gap-1.5">
+                    <p className="truncate text-sm font-medium">{contact.name}</p>
                     {contact.type === 'app' && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
                             Minerva
                         </Badge>
                     )}
                 </div>
                 {contact.app && (
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="truncate text-[11px] text-muted-foreground">
                         {contact.app.domain}
                     </p>
                 )}
