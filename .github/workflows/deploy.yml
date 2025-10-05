@@ -1,0 +1,99 @@
+name: Deploy EchoHub
+
+on:
+  push:
+    branches:
+      - main         # Deploy to production
+      - development  # Deploy to staging
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.ref == 'refs/heads/main' && 'Production' || 'Staging' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set deployment environment
+        id: env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "host=${{ secrets.PRODUCTION_HOST }}" >> $GITHUB_OUTPUT
+            echo "path=/var/www/echohub/production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "host=${{ secrets.STAGING_HOST }}" >> $GITHUB_OUTPUT
+            echo "path=/var/www/echohub/staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ steps.env.outputs.host }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd ${{ steps.env.outputs.path }}
+
+            # Git pull
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
+
+            # Install PHP dependencies
+            if [ "${{ steps.env.outputs.environment }}" == "production" ]; then
+              composer install --no-dev --optimize-autoloader --no-interaction
+            else
+              composer install --optimize-autoloader --no-interaction
+            fi
+
+            # Install Node dependencies and build
+            bun install
+            bun run build
+
+            # Run migrations
+            php artisan migrate --force
+
+            # Clear and cache config
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            if [ "${{ steps.env.outputs.environment }}" == "production" ]; then
+              php artisan config:cache
+              php artisan route:cache
+              php artisan view:cache
+            fi
+
+            # Set permissions
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
+
+            # Restart services
+            sudo systemctl reload php8.2-fpm
+            sudo supervisorctl restart echohub-${{ steps.env.outputs.environment }}-worker:*
+
+            echo "✅ Deployment to ${{ steps.env.outputs.environment }} completed successfully!"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "🚀 Successfully deployed to ${{ steps.env.outputs.environment }}"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Deployment to ${{ steps.env.outputs.environment }} failed"
