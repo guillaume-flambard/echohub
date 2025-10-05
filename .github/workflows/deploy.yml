@@ -49,12 +49,25 @@ jobs:
           script: |
             cd ${{ steps.env.outputs.path }}
 
-            # Fix ownership before git operations
+            # Fix ownership before git operations (including all subdirectories)
             sudo chown -R $USER:$USER .
+
+            # Remove git index lock if it exists
+            rm -f .git/index.lock
+
+            # Force remove problematic files that might have permission issues
+            git checkout HEAD -- storage/ database/ bootstrap/cache/ 2>/dev/null || true
 
             # Git pull
             git fetch origin
-            git reset --hard origin/${{ github.ref_name }}
+            git reset --hard origin/${{ github.ref_name }} || {
+              echo "Git reset failed, attempting alternative update method..."
+              git stash || true
+              git pull origin ${{ github.ref_name }} --rebase || git pull origin ${{ github.ref_name }}
+            }
+
+            # Clean up any untracked files
+            git clean -fd || true
 
             # Install PHP dependencies (ignore platform requirements for PHP version)
             if [ "${{ steps.env.outputs.environment }}" == "production" ]; then
