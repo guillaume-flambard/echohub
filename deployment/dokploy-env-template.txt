@@ -1,0 +1,122 @@
+# EchoHub Environment Variables for Dokploy
+# Copy these to your Dokploy application's environment variables section
+
+# Application
+APP_NAME=EchoHub
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://hub.echotravel.app
+APP_KEY=base64:GENERATE_THIS_WITH_php_artisan_key:generate
+
+# Logging
+LOG_CHANNEL=stack
+LOG_LEVEL=error
+
+# Database (PostgreSQL - provided by Dokploy)
+DB_CONNECTION=pgsql
+DB_HOST=echohub_production
+DB_PORT=5432
+DB_DATABASE=echohub_production
+DB_USERNAME=echohub
+DB_PASSWORD=YOUR_DATABASE_PASSWORD
+
+# Session & Queue
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+QUEUE_CONNECTION=database
+
+# Cache
+CACHE_STORE=database
+
+# Sanctum (API Authentication)
+SANCTUM_STATEFUL_DOMAINS=hub.echotravel.app
+
+# Matrix Homeserver Configuration
+MATRIX_HOMESERVER_URL=http://localhost:8008
+MATRIX_SERVER_NAME=echohub.local
+MATRIX_ADMIN_USER=admin
+MATRIX_ADMIN_PASSWORD=YOUR_MATRIX_ADMIN_PASSWORD
+
+# Matrix Bot Credentials
+ECHOTRAVEL_MATRIX_PASSWORD=YOUR_ECHOTRAVEL_BOT_PASSWORD
+PHANGAN_AI_MATRIX_PASSWORD=YOUR_PHANGAN_BOT_PASSWORD
+
+# Laravel API Token for Minerva Bot
+LARAVEL_API_TOKEN=YOUR_LARAVEL_API_TOKEN
+
+# Minerva AI Configuration (Default: Ollama - Free & Local)
+MINERVA_AI_PROVIDER=ollama
+MINERVA_AI_BASE_URL=http://localhost:11434
+MINERVA_AI_MODEL=llama3.2:3b
+
+# Alternative: Anthropic Claude (requires API key)
+# MINERVA_AI_PROVIDER=anthropic
+# MINERVA_AI_API_KEY=your_anthropic_api_key
+# MINERVA_AI_MODEL=claude-3-5-sonnet-20250219
+
+# Alternative: OpenAI (requires API key)
+# MINERVA_AI_PROVIDER=openai
+# MINERVA_AI_API_KEY=your_openai_api_key
+# MINERVA_AI_MODEL=gpt-4-turbo-preview
+
+# Mail Configuration (Optional)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="noreply@echotravel.app"
+MAIL_FROM_NAME="${APP_NAME}"
+
+# ────────────────────────────────────────────────────────────
+# STAGING ENVIRONMENT DIFFERENCES
+# ────────────────────────────────────────────────────────────
+# For staging, change these values:
+#
+# APP_ENV=staging
+# APP_DEBUG=true
+# APP_URL=https://hub-staging.echotravel.app
+# DB_HOST=echohub_staging
+# DB_DATABASE=echohub_staging
+# SANCTUM_STATEFUL_DOMAINS=hub-staging.echotravel.app
+#
+# ────────────────────────────────────────────────────────────
+# DEVELOPMENT ENVIRONMENT DIFFERENCES
+# ────────────────────────────────────────────────────────────
+# For development, change these values:
+#
+# APP_ENV=local
+# APP_DEBUG=true
+# APP_URL=https://hub-dev.echotravel.app
+# DB_HOST=echohub_development
+# DB_DATABASE=echohub_development
+# LOG_LEVEL=debug
+# SANCTUM_STATEFUL_DOMAINS=hub-dev.echotravel.app
+#
+# ────────────────────────────────────────────────────────────
+
+# IMPORTANT NOTES:
+#
+# 1. Generate APP_KEY:
+#    Run this in Dokploy terminal: php artisan key:generate --show
+#    Copy the output (starts with "base64:")
+#
+# 2. Database credentials:
+#    - DB_HOST should match your Dokploy database name
+#    - DB_PASSWORD is shown when you create the database
+#
+# 3. Matrix passwords:
+#    - Generate with: openssl rand -hex 32
+#    - Or use the deployment/create-matrix-bot.sh script
+#
+# 4. Laravel API Token:
+#    Generate in tinker:
+#    php artisan tinker
+#    > $user = User::first();
+#    > $token = $user->createToken('minerva-bot')->plainTextToken;
+#    > echo $token;
+#
+# 5. Minerva AI:
+#    - Ollama is free and runs locally (default)
+#    - Or use Claude/OpenAI with API key

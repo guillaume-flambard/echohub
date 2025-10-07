@@ -47,9 +47,13 @@ export class BotManager {
    */
   private async startBot(app: AppConfig) {
     try {
-      // In production, you would get the access token from Matrix registration
-      // For now, we'll assume it's stored in the app config or generate it
-      const accessToken = app.api_config?.matrix_access_token || this.generateBotToken(app);
+      // Get access token from config, or login to get one
+      let accessToken = app.api_config?.matrix_access_token;
+
+      if (!accessToken) {
+        console.log(`🔑 No access token found for ${app.name}, logging in...`);
+        accessToken = await this.loginBot(app);
+      }
 
       const bot = new MinervaAppBot(
         this.homeserverUrl,
@@ -90,12 +94,36 @@ export class BotManager {
   }
 
   /**
-   * Generate or retrieve bot token
-   * In production, this should call Matrix API to register the bot
+   * Login to Matrix and get access token
    */
-  private generateBotToken(app: AppConfig): string {
-    // TODO: Implement actual Matrix bot registration
-    // For now, return a placeholder
-    return `bot_token_for_${app.matrix_user_id}`;
+  private async loginBot(app: AppConfig): Promise<string> {
+    // Get bot credentials from app config
+    const username = app.api_config?.matrix_bot_username;
+    const password = app.api_config?.matrix_bot_password;
+
+    if (!username || !password) {
+      throw new Error(
+        `Missing Matrix credentials for ${app.name}. ` +
+        `Set matrix_bot_username and matrix_bot_password in api_config.`
+      );
+    }
+
+    try {
+      // Login to Matrix
+      const response = await axios.post(`${this.homeserverUrl}/_matrix/client/r0/login`, {
+        type: 'm.login.password',
+        user: username,
+        password: password,
+      });
+
+      const accessToken = response.data.access_token;
+      console.log(`✅ Logged in to Matrix as ${username}`);
+
+      return accessToken;
+    } catch (error: any) {
+      throw new Error(
+        `Failed to login to Matrix for ${app.name}: ${error.message}`
+      );
+    }
   }
 }

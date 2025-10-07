@@ -1,6 +1,58 @@
 # EchoHub Deployment
 
-Quick deployment guide for EchoHub on OVH VPS.
+Complete deployment guide for EchoHub on OVH VPS.
+
+## 🚀 Deployment Options
+
+### **Option 1: Dokploy (Recommended)**
+- ✅ PostgreSQL with automatic backups
+- ✅ Auto-deployments from GitHub
+- ✅ SSL certificates (Let's Encrypt)
+- ✅ Dashboard management
+- ✅ Built-in monitoring
+- **Setup time:** ~30 minutes
+
+👉 **[Start with Dokploy Quick Start →](DOKPLOY_QUICKSTART.md)**
+
+### **Option 2: Manual Deployment**
+- Traditional server setup
+- GitHub Actions CI/CD
+- Manual configuration
+- Full control
+- **Setup time:** ~2 hours
+
+👉 **[Continue with manual setup below ↓](#manual-deployment)**
+
+---
+
+## Dokploy Deployment (Recommended)
+
+### Quick Links
+- **[Quick Start Guide](DOKPLOY_QUICKSTART.md)** - Get running in 30 minutes
+- **[PostgreSQL Checklist](POSTGRESQL_DEPLOY_CHECKLIST.md)** - Step-by-step with PostgreSQL
+- **[Complete Migration Guide](DOKPLOY_MIGRATION.md)** - Full documentation
+- **[Environment Template](dokploy-env-template.txt)** - Variables configuration
+- **[Installation Script](install-dokploy.sh)** - One-command install
+
+### Ollama AI Configuration
+- **[Ollama Quick Fix](OLLAMA_QUICK_FIX.md)** - 5-minute setup for Dokploy AI
+- **[Ollama Complete Guide](OLLAMA_DOKPLOY_FIX.md)** - Detailed troubleshooting
+
+### Quick Install
+
+```bash
+ssh memo@51.79.55.171
+./deployment/install-dokploy.sh
+```
+
+Then follow [DOKPLOY_QUICKSTART.md](DOKPLOY_QUICKSTART.md)
+
+**After Dokploy is running, configure Ollama AI:**
+Follow [OLLAMA_QUICK_FIX.md](OLLAMA_QUICK_FIX.md) to enable free AI features
+
+---
+
+## Manual Deployment
 
 ## Directory Structure
 
@@ -324,15 +376,35 @@ echo "0 2 * * * /root/backup-echohub.sh" | sudo crontab -
 - [ ] Debug mode off in production
 - [ ] Regular updates scheduled
 
+## EchoTravel App Integration
+
+### Quick Links
+- **[App Integration Guide](ECHOTRAVEL_APP_INTEGRATION.md)** - API endpoints for EchoTravel
+- **[Setup Checklist](ECHOTRAVEL_SETUP_CHECKLIST.md)** - Step-by-step integration
+- **[Matrix Bot Script](create-matrix-bot.sh)** - Create Matrix bot users
+
+### What You Need to Do in EchoTravel
+
+1. **Add API routes** (`/api/hub/*`)
+2. **Create authentication middleware** (verify service API key)
+3. **Implement data endpoints** (bookings, revenue, analytics)
+4. **Test integration** (curl commands provided in guide)
+
+👉 **[Start Integration →](ECHOTRAVEL_APP_INTEGRATION.md)**
+
+---
+
 ## Support
 
 For detailed documentation, see:
-- Main documentation: `/DEPLOYMENT.md`
-- Application docs: `/README.md`
-- Matrix setup: `/MATRIX_SETUP.md`
+- **Dokploy Setup**: [DOKPLOY_QUICKSTART.md](DOKPLOY_QUICKSTART.md)
+- **App Integration**: [ECHOTRAVEL_APP_INTEGRATION.md](ECHOTRAVEL_APP_INTEGRATION.md)
+- **Main README**: `/README.md` (project root)
+- **Claude Code Guide**: `/CLAUDE.md`
 
 ## URLs
 
 - **Production**: https://hub.echotravel.app
-- **Staging**: https://staging.hub.echotravel.app
-- **Development**: https://dev.hub.echotravel.app
+- **Staging**: https://hub-staging.echotravel.app
+- **Development**: https://hub-dev.echotravel.app
+- **Dokploy Dashboard**: http://51.79.55.171:3000
