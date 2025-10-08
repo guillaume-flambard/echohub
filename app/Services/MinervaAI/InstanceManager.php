@@ -2,15 +2,12 @@
 
 namespace App\Services\MinervaAI;
 
+use App\Models\AISetting;
 use App\Models\App;
 use App\Models\MinervaContext as MinervaContextModel;
 
 class InstanceManager
 {
-    public function __construct(
-        private MinervaService $minervaService
-    ) {}
-
     /**
      * Get or create a Minerva context for an app instance
      */
@@ -29,6 +26,26 @@ class InstanceManager
     }
 
     /**
+     * Get MinervaService with user's AI settings
+     */
+    private function getMinervaService(int $userId): MinervaService
+    {
+        $setting = AISetting::getActive($userId);
+
+        if (!$setting) {
+            // Fallback to config
+            return new MinervaService();
+        }
+
+        return new MinervaService([
+            'provider' => $setting->provider,
+            'model' => $setting->model,
+            'api_key' => $setting->api_key,
+            'base_url' => $setting->base_url,
+        ]);
+    }
+
+    /**
      * Send a message to a Minerva instance
      */
     public function sendMessage(App $app, string $message, int $userId): array
@@ -41,8 +58,11 @@ class InstanceManager
         // Get conversation history
         $history = $context->conversation_history ?? [];
 
+        // Get MinervaService with user's settings
+        $minervaService = $this->getMinervaService($userId);
+
         // Send to Minerva AI
-        $response = $this->minervaService->chat([
+        $response = $minervaService->chat([
             'message' => $message,
             'context' => $appContext,
             'instanceId' => $app->matrix_user_id,

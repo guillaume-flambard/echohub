@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AISettingController;
 use App\Http\Controllers\Api\ExternalApiController;
 use App\Http\Controllers\Api\ServiceAccountController;
 use App\Http\Controllers\AppController;
@@ -33,6 +34,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/contacts/{contact}/messages', [MessageController::class, 'send']);
     Route::get('/contacts/{contact}/messages', [MessageController::class, 'history']);
     Route::delete('/contacts/{contact}/messages', [MessageController::class, 'clearHistory']);
+
+    // AI Settings
+    Route::get('/ai-settings', [AISettingController::class, 'index']);
+    Route::put('/ai-settings', [AISettingController::class, 'update']);
+    Route::get('/ai-settings/models', [AISettingController::class, 'availableModels']);
 
     // Service Account Management (Admin only)
     Route::prefix('service-accounts')->name('api.service-accounts.')->group(function () {

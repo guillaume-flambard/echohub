@@ -2,13 +2,14 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Contact, Message } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Menu, MoreVertical, Trash2, User } from 'lucide-react';
+import { Bot, Menu, MoreVertical, Settings, Trash2, User } from 'lucide-react';
 import { MessageInput } from './message-input';
 import { MessageList } from './message-list';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -22,6 +23,7 @@ interface ChatViewProps {
     onClearHistory: () => Promise<boolean>;
     showMobileMenuButton?: boolean;
     onMobileMenuClick?: () => void;
+    onOpenAISettings?: () => void;
 }
 
 export function ChatView({
@@ -34,6 +36,7 @@ export function ChatView({
     onClearHistory,
     showMobileMenuButton = false,
     onMobileMenuClick,
+    onOpenAISettings,
 }: ChatViewProps) {
     if (!contact) {
         return (
@@ -105,6 +108,15 @@ export function ChatView({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            {onOpenAISettings && (
+                                <>
+                                    <DropdownMenuItem onClick={onOpenAISettings}>
+                                        <Settings className="mr-2 size-4" />
+                                        AI Settings
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                </>
+                            )}
                             <DropdownMenuItem
                                 onClick={onClearHistory}
                                 className="text-destructive"

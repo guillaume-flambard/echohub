@@ -1,4 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
+import { AISettingsModal } from '@/components/hub/ai-settings-modal';
 import { ChatView } from '@/components/hub/chat-view';
 import { ContactList } from '@/components/hub/contact-list';
 import { useContactsStore } from '@/stores/contacts';
@@ -18,6 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Hub() {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isMobileContactsOpen, setIsMobileContactsOpen] = useState(false);
+    const [isAISettingsOpen, setIsAISettingsOpen] = useState(false);
 
     // Zustand stores
     const { contacts, loading: contactsLoading, error: contactsError, fetchContacts } = useContactsStore();
@@ -128,9 +130,16 @@ export default function Hub() {
                         onClearHistory={handleClearHistory}
                         showMobileMenuButton={!!selectedContact && !isMobileContactsOpen}
                         onMobileMenuClick={() => setIsMobileContactsOpen(true)}
+                        onOpenAISettings={() => setIsAISettingsOpen(true)}
                     />
                 </div>
             </div>
+
+            {/* AI Settings Modal */}
+            <AISettingsModal
+                open={isAISettingsOpen}
+                onOpenChange={setIsAISettingsOpen}
+            />
         </AppLayout>
     );
 }

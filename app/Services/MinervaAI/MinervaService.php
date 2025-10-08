@@ -15,12 +15,20 @@ class MinervaService
 
     private string $baseUrl;
 
-    public function __construct()
+    public function __construct(?array $config = null)
     {
-        $this->provider = config('minerva.provider', 'ollama');
-        $this->apiKey = config('minerva.api_key', '');
-        $this->model = config('minerva.model', 'llama3.2:3b');
-        $this->baseUrl = config('minerva.base_url', 'http://localhost:11434');
+        // Allow dynamic config override, fallback to Laravel config
+        if ($config) {
+            $this->provider = $config['provider'] ?? config('minerva.provider', 'ollama');
+            $this->apiKey = $config['api_key'] ?? config('minerva.api_key', '');
+            $this->model = $config['model'] ?? config('minerva.model', 'llama3.2:3b');
+            $this->baseUrl = $config['base_url'] ?? config('minerva.base_url', 'http://localhost:11434');
+        } else {
+            $this->provider = config('minerva.provider', 'ollama');
+            $this->apiKey = config('minerva.api_key', '');
+            $this->model = config('minerva.model', 'llama3.2:3b');
+            $this->baseUrl = config('minerva.base_url', 'http://localhost:11434');
+        }
     }
 
     /**
