@@ -152,7 +152,7 @@ export function ChatView({
                         </div>
                     </motion.div>
                 ) : (
-                    <MessageList key="messages" messages={messages} contact={contact} />
+                    <MessageList key="messages" messages={messages} contact={contact} sending={sending} />
                 )}
             </AnimatePresence>
 
