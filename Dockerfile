@@ -1,5 +1,6 @@
 # EchoHub Production Dockerfile
 # Optimized for Laravel 12 with Inertia.js + React on Dokploy
+# Last deployment: 2025-10-08
 
 # Stage 1: Build frontend assets
 FROM oven/bun:1 AS frontend-builder
