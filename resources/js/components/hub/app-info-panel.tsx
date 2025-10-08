@@ -90,17 +90,19 @@ export function AppInfoPanel({ contact }: AppInfoPanelProps) {
 
                         <Separator />
 
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Key className="h-3 w-3" />
-                                <span className="font-medium">API Key</span>
+                        {app.api_key && (
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <Key className="h-3 w-3" />
+                                    <span className="font-medium">API Key</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <code className="flex-1 rounded bg-muted px-2 py-1 text-xs font-mono">
+                                        {app.api_key.substring(0, 20)}...
+                                    </code>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <code className="flex-1 rounded bg-muted px-2 py-1 text-xs font-mono">
-                                    {app.api_key.substring(0, 20)}...
-                                </code>
-                            </div>
-                        </div>
+                        )}
                     </CardContent>
                 </Card>
 
