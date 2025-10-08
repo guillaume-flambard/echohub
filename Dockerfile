@@ -88,6 +88,8 @@ RUN echo '#!/bin/sh' > /start.sh \
       && echo 'php artisan event:cache' >> /start.sh \
       && echo 'echo "Running database migrations..."' >> /start.sh \
       && echo 'php artisan migrate --force --no-interaction' >> /start.sh \
+      && echo 'echo "Seeding database..."' >> /start.sh \
+      && echo 'php artisan db:seed --force --class=DatabaseSeeder' >> /start.sh \
       && echo 'echo "Starting server..."' >> /start.sh \
       && echo 'exec php artisan serve --host=0.0.0.0 --port=8000' >> /start.sh \
       && chmod +x /start.sh
