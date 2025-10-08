@@ -2,7 +2,6 @@ import AppLayout from '@/layouts/app-layout';
 import { ChatView } from '@/components/hub/chat-view';
 import { ContactList } from '@/components/hub/contact-list';
 import { Button } from '@/components/ui/button';
-import { useSidebar } from '@/components/ui/sidebar';
 import { useContactsStore } from '@/stores/contacts';
 import { useMessagesStore } from '@/stores/messages';
 import { type BreadcrumbItem, type Contact } from '@/types';
@@ -22,24 +21,9 @@ export default function Hub() {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isMobileContactsOpen, setIsMobileContactsOpen] = useState(false);
 
-    // Safely get sidebar context (might not be available in all layouts)
-    let sidebar;
-    try {
-        sidebar = useSidebar();
-    } catch {
-        sidebar = null;
-    }
-
     // Zustand stores
     const { contacts, loading: contactsLoading, error: contactsError, fetchContacts } = useContactsStore();
     const { messages, loading, sending, error: messagesError, fetchHistory, sendMessage, clearHistory } = useMessagesStore();
-
-    // Close app sidebar on mobile when hub loads (if sidebar is available)
-    useEffect(() => {
-        if (sidebar?.isMobile) {
-            sidebar.setOpenMobile(false);
-        }
-    }, [sidebar]);
 
     // Fetch contacts on mount
     useEffect(() => {
