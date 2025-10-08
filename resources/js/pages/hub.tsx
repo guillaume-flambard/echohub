@@ -100,15 +100,22 @@ export default function Hub() {
                     </Button>
                 )}
 
-                {/* Contact List Sidebar - Desktop: always visible, Mobile: togglable */}
+                {/* Contact List Sidebar */}
                 <div
                     className={`
-                        absolute md:relative z-10
                         w-full md:w-80 h-full
                         border-r border-sidebar-border bg-card
                         transition-transform duration-200 ease-in-out
-                        md:translate-x-0
-                        ${!selectedContact ? 'translate-x-0' : isMobileContactsOpen ? 'translate-x-0' : '-translate-x-full'}
+                        ${
+                            // Desktop: always visible (static)
+                            'md:relative md:translate-x-0'
+                        }
+                        ${
+                            // Mobile: conditional visibility
+                            selectedContact
+                                ? `absolute z-10 ${isMobileContactsOpen ? 'translate-x-0' : '-translate-x-full'}`
+                                : 'relative translate-x-0'
+                        }
                     `}
                 >
                     <ContactList
