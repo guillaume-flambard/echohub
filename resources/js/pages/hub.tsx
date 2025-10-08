@@ -1,5 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { AISettingsModal } from '@/components/hub/ai-settings-modal';
+import { AppInfoPanel } from '@/components/hub/app-info-panel';
 import { ChatView } from '@/components/hub/chat-view';
 import { ContactList } from '@/components/hub/contact-list';
 import { useContactsStore } from '@/stores/contacts';
@@ -119,19 +120,24 @@ export default function Hub() {
                 </div>
 
                 {/* Chat View - Hidden on mobile when no contact selected */}
-                <div className={`flex-1 bg-background ${!selectedContact ? 'hidden md:block' : ''}`}>
-                    <ChatView
-                        contact={selectedContact}
-                        messages={currentMessages}
-                        loading={messagesLoading}
-                        sending={isSending}
-                        error={messagesError}
-                        onSendMessage={handleSendMessage}
-                        onClearHistory={handleClearHistory}
-                        showMobileMenuButton={!!selectedContact && !isMobileContactsOpen}
-                        onMobileMenuClick={() => setIsMobileContactsOpen(true)}
-                        onOpenAISettings={() => setIsAISettingsOpen(true)}
-                    />
+                <div className={`flex flex-1 bg-background ${!selectedContact ? 'hidden md:flex' : ''}`}>
+                    <div className="flex-1">
+                        <ChatView
+                            contact={selectedContact}
+                            messages={currentMessages}
+                            loading={messagesLoading}
+                            sending={isSending}
+                            error={messagesError}
+                            onSendMessage={handleSendMessage}
+                            onClearHistory={handleClearHistory}
+                            showMobileMenuButton={!!selectedContact && !isMobileContactsOpen}
+                            onMobileMenuClick={() => setIsMobileContactsOpen(true)}
+                            onOpenAISettings={() => setIsAISettingsOpen(true)}
+                        />
+                    </div>
+
+                    {/* App Info Panel - Only show for app contacts on large screens */}
+                    {selectedContact && <AppInfoPanel contact={selectedContact} />}
                 </div>
             </div>
 
