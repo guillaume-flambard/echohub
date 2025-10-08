@@ -9,13 +9,18 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { hub } from '@/routes';
+import { dashboard, hub } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { MessageSquare } from 'lucide-react';
+import { LayoutDashboard, MessageSquare } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
+    {
+        title: 'Dashboard',
+        href: dashboard(),
+        icon: LayoutDashboard,
+    },
     {
         title: 'Hub',
         href: hub(),
