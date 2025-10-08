@@ -20,6 +20,7 @@ interface ChatViewProps {
     error: string | null;
     onSendMessage: (content: string) => Promise<boolean>;
     onClearHistory: () => Promise<boolean>;
+    showMobileMenuButton?: boolean;
 }
 
 export function ChatView({
@@ -30,6 +31,7 @@ export function ChatView({
     error,
     onSendMessage,
     onClearHistory,
+    showMobileMenuButton = false,
 }: ChatViewProps) {
     if (!contact) {
         return (
@@ -64,7 +66,7 @@ export function ChatView({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center justify-between border-b border-sidebar-border p-4"
+                className={`flex items-center justify-between border-b border-sidebar-border p-4 ${showMobileMenuButton ? 'pl-16 md:pl-4' : ''}`}
             >
                 <div className="flex items-center gap-3">
                     <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">

@@ -137,6 +137,7 @@ export default function Hub() {
                         error={messagesError}
                         onSendMessage={handleSendMessage}
                         onClearHistory={handleClearHistory}
+                        showMobileMenuButton={true}
                     />
                 </div>
             </div>
