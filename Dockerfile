@@ -3,15 +3,18 @@
 # Last deployment: 2025-10-08
 
 # Stage 1: Build frontend assets
-FROM oven/bun:1 AS frontend-builder
+FROM node:20-bookworm AS frontend-builder
 
 WORKDIR /app
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Copy package files
-COPY package.json bun.lock* ./
+COPY package.json pnpm-lock.yaml* ./
 
 # Install dependencies
-RUN bun install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Copy source files
 COPY . .
@@ -20,7 +23,7 @@ COPY . .
 # Set SKIP_WAYFINDER to skip type generation during Docker build
 # (Wayfinder types are for development convenience, not required for production)
 ENV SKIP_WAYFINDER=1
-RUN bun run build
+RUN pnpm run build
 
 # Stage 2: Final production image
 FROM php:8.2-cli-alpine
