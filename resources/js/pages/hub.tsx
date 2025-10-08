@@ -38,6 +38,10 @@ export default function Hub() {
                 const contact = contacts.find(c => c.id === parseInt(savedContactId));
                 if (contact) {
                     setSelectedContact(contact);
+                    // If restoring a contact on mobile, close the contacts panel
+                    if (window.innerWidth < 768) {
+                        setIsMobileContactsOpen(false);
+                    }
                 }
             }
         }
@@ -103,8 +107,8 @@ export default function Hub() {
                         w-full md:w-80 h-full
                         border-r border-sidebar-border bg-card
                         transition-transform duration-200 ease-in-out
-                        ${isMobileContactsOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-                        ${!selectedContact ? 'relative translate-x-0' : ''}
+                        md:translate-x-0
+                        ${!selectedContact ? 'translate-x-0' : isMobileContactsOpen ? 'translate-x-0' : '-translate-x-full'}
                     `}
                 >
                     <ContactList
