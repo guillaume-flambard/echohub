@@ -1,12 +1,10 @@
 import AppLayout from '@/layouts/app-layout';
 import { ChatView } from '@/components/hub/chat-view';
 import { ContactList } from '@/components/hub/contact-list';
-import { Button } from '@/components/ui/button';
 import { useContactsStore } from '@/stores/contacts';
 import { useMessagesStore } from '@/stores/messages';
 import { type BreadcrumbItem, type Contact } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { hub } from '@/routes';
 
@@ -88,18 +86,6 @@ export default function Hub() {
             <Head title="Hub" />
 
             <div className="relative flex h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                {/* Mobile Menu Button - Only show when contact selected on mobile */}
-                {selectedContact && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute left-4 top-4 z-20 md:hidden"
-                        onClick={() => setIsMobileContactsOpen(!isMobileContactsOpen)}
-                    >
-                        {isMobileContactsOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                    </Button>
-                )}
-
                 {/* Contact List Sidebar */}
                 <div
                     className={`
@@ -124,6 +110,9 @@ export default function Hub() {
                         onSelectContact={handleSelectContact}
                         loading={contactsLoading}
                         error={contactsError}
+                        showMobileToggle={!!selectedContact}
+                        isMobileOpen={isMobileContactsOpen}
+                        onMobileToggle={() => setIsMobileContactsOpen(!isMobileContactsOpen)}
                     />
                 </div>
 
@@ -137,7 +126,8 @@ export default function Hub() {
                         error={messagesError}
                         onSendMessage={handleSendMessage}
                         onClearHistory={handleClearHistory}
-                        showMobileMenuButton={true}
+                        showMobileMenuButton={!!selectedContact && !isMobileContactsOpen}
+                        onMobileMenuClick={() => setIsMobileContactsOpen(true)}
                     />
                 </div>
             </div>

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Contact, Message } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, MoreVertical, Trash2, User } from 'lucide-react';
+import { Bot, Menu, MoreVertical, Trash2, User } from 'lucide-react';
 import { MessageInput } from './message-input';
 import { MessageList } from './message-list';
 import {
@@ -21,6 +21,7 @@ interface ChatViewProps {
     onSendMessage: (content: string) => Promise<boolean>;
     onClearHistory: () => Promise<boolean>;
     showMobileMenuButton?: boolean;
+    onMobileMenuClick?: () => void;
 }
 
 export function ChatView({
@@ -32,6 +33,7 @@ export function ChatView({
     onSendMessage,
     onClearHistory,
     showMobileMenuButton = false,
+    onMobileMenuClick,
 }: ChatViewProps) {
     if (!contact) {
         return (
@@ -66,9 +68,20 @@ export function ChatView({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                className={`flex items-center justify-between border-b border-sidebar-border p-4 ${showMobileMenuButton ? 'pl-16 md:pl-4' : ''}`}
+                className="flex items-center justify-between border-b border-sidebar-border p-4"
             >
                 <div className="flex items-center gap-3">
+                    {/* Mobile menu button to open contacts panel */}
+                    {showMobileMenuButton && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onMobileMenuClick}
+                            className="h-8 w-8 md:hidden"
+                        >
+                            <Menu className="h-4 w-4" />
+                        </Button>
+                    )}
                     <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
                         {contact.type === 'app' ? (
                             <Bot className="size-5 text-primary" />

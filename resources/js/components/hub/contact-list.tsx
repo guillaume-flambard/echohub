@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Contact } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Circle, Search, User } from 'lucide-react';
+import { Bot, Circle, Search, User, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface ContactListProps {
@@ -13,6 +13,9 @@ interface ContactListProps {
     onSelectContact: (contact: Contact) => void;
     loading?: boolean;
     error?: string | null;
+    showMobileToggle?: boolean;
+    isMobileOpen?: boolean;
+    onMobileToggle?: () => void;
 }
 
 export function ContactList({
@@ -21,6 +24,9 @@ export function ContactList({
     onSelectContact,
     loading = false,
     error = null,
+    showMobileToggle = false,
+    isMobileOpen = false,
+    onMobileToggle,
 }: ContactListProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState<'all' | 'app' | 'human'>('all');
@@ -64,6 +70,21 @@ export function ContactList({
     return (
         <div className="flex h-full flex-col">
             <div className="border-b border-sidebar-border p-3">
+                {/* Mobile close button - only visible when toggle is shown */}
+                {showMobileToggle && (
+                    <div className="mb-2 flex items-center justify-between md:hidden">
+                        <h2 className="text-sm font-semibold">Contacts</h2>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onMobileToggle}
+                            className="h-8 w-8"
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
+
                 <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
