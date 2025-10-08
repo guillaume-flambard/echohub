@@ -2,6 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { ChatView } from '@/components/hub/chat-view';
 import { ContactList } from '@/components/hub/contact-list';
 import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useContactsStore } from '@/stores/contacts';
 import { useMessagesStore } from '@/stores/messages';
 import { type BreadcrumbItem, type Contact } from '@/types';
@@ -20,10 +21,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Hub() {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isMobileContactsOpen, setIsMobileContactsOpen] = useState(false);
+    const { isMobile, setOpenMobile } = useSidebar();
 
     // Zustand stores
     const { contacts, loading: contactsLoading, error: contactsError, fetchContacts } = useContactsStore();
     const { messages, loading, sending, error: messagesError, fetchHistory, sendMessage, clearHistory } = useMessagesStore();
+
+    // Close app sidebar on mobile when hub loads
+    useEffect(() => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    }, [isMobile, setOpenMobile]);
 
     // Fetch contacts on mount
     useEffect(() => {
