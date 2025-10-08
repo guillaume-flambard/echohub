@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AISetting extends Model
 {
+    protected $table = 'ai_settings';
+
     protected $fillable = [
         'user_id',
         'provider',
