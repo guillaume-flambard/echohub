@@ -44,6 +44,7 @@ COPY routes ./routes
 COPY app ./app
 COPY bootstrap ./bootstrap
 COPY config ./config
+COPY database ./database
 
 # Copy frontend source files for build
 COPY resources ./resources
@@ -58,10 +59,13 @@ RUN composer install --no-dev --no-interaction --prefer-dist
 # Create minimal .env and required directories for artisan commands
 RUN echo "APP_KEY=base64:$(openssl rand -base64 32)" > .env \
     && echo "APP_ENV=production" >> .env \
-    && echo "APP_DEBUG=false" >> .env \
+    && echo "APP_DEBUG=true" >> .env \
+    && echo "DB_CONNECTION=sqlite" >> .env \
+    && echo "DB_DATABASE=/tmp/database.sqlite" >> .env \
     && mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
-    && mkdir -p bootstrap/cache
+    && mkdir -p bootstrap/cache \
+    && touch /tmp/database.sqlite
 
 # Build frontend assets (Wayfinder will generate routes)
 RUN pnpm run build
