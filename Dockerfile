@@ -10,19 +10,60 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# Install PHP 8.3 for Laravel Wayfinder plugin
+# Node image is Debian-based, use apt with Sury's repository for PHP 8.3
+RUN apt-get update && apt-get install -y \
+    lsb-release \
+    ca-certificates \
+    apt-transport-https \
+    software-properties-common \
+    gnupg2 \
+    curl \
+    && curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb \
+    && dpkg -i /tmp/debsuryorg-archive-keyring.deb \
+    && sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
+    && apt-get update \
+    && apt-get install -y \
+    php8.3-cli \
+    php8.3-mbstring \
+    php8.3-xml \
+    php8.3-curl \
+    php8.3-gd \
+    php8.3-zip \
+    && rm -rf /var/lib/apt/lists/* /tmp/debsuryorg-archive-keyring.deb
+
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source files
-COPY . .
+# Copy Laravel files needed for Wayfinder
+COPY artisan ./
+COPY routes ./routes
+COPY app ./app
+COPY bootstrap ./bootstrap
+COPY config ./config
 
-# Build frontend assets
-# Set SKIP_WAYFINDER to skip type generation during Docker build
-# (Wayfinder types are for development convenience, not required for production)
-ENV SKIP_WAYFINDER=1
+# Copy frontend source files for build
+COPY resources ./resources
+COPY public ./public
+COPY vite.config.ts tsconfig.json ./
+
+# Install Composer (for PHP dependencies needed by artisan)
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --prefer-dist
+
+# Create minimal .env and required directories for artisan commands
+RUN echo "APP_KEY=base64:$(openssl rand -base64 32)" > .env \
+    && echo "APP_ENV=production" >> .env \
+    && echo "APP_DEBUG=false" >> .env \
+    && mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache
+
+# Build frontend assets (Wayfinder will generate routes)
 RUN pnpm run build
 
 # Stage 2: Final production image
