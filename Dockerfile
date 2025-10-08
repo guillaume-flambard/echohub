@@ -72,10 +72,9 @@ RUN mkdir -p storage/framework/{cache,sessions,views} \
     && mkdir -p bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# Optimize for production
-RUN php artisan config:cache || true \
-    && php artisan route:cache || true \
-    && php artisan view:cache || true
+# Optimize for production (Laravel 12 comprehensive optimization)
+RUN php artisan optimize \
+    && php artisan event:cache
 
 # Expose port
 EXPOSE 8000
