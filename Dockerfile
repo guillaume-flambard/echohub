@@ -17,6 +17,9 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build frontend assets
+# Set SKIP_WAYFINDER to skip type generation during Docker build
+# (Wayfinder types are for development convenience, not required for production)
+ENV SKIP_WAYFINDER=1
 RUN bun run build
 
 # Stage 2: Final production image

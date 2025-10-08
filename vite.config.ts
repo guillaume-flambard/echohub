@@ -13,9 +13,12 @@ export default defineConfig({
         }),
         react(),
         tailwindcss(),
-        wayfinder({
-            formVariants: true,
-        }),
+        // Skip Wayfinder type generation in Docker builds (requires PHP)
+        ...(process.env.SKIP_WAYFINDER ? [] : [
+            wayfinder({
+                formVariants: true,
+            }),
+        ]),
     ],
     esbuild: {
         jsx: 'automatic',
