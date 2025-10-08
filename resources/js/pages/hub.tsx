@@ -21,18 +21,25 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Hub() {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isMobileContactsOpen, setIsMobileContactsOpen] = useState(false);
-    const { isMobile, setOpenMobile } = useSidebar();
+
+    // Safely get sidebar context (might not be available in all layouts)
+    let sidebar;
+    try {
+        sidebar = useSidebar();
+    } catch {
+        sidebar = null;
+    }
 
     // Zustand stores
     const { contacts, loading: contactsLoading, error: contactsError, fetchContacts } = useContactsStore();
     const { messages, loading, sending, error: messagesError, fetchHistory, sendMessage, clearHistory } = useMessagesStore();
 
-    // Close app sidebar on mobile when hub loads
+    // Close app sidebar on mobile when hub loads (if sidebar is available)
     useEffect(() => {
-        if (isMobile) {
-            setOpenMobile(false);
+        if (sidebar?.isMobile) {
+            sidebar.setOpenMobile(false);
         }
-    }, [isMobile, setOpenMobile]);
+    }, [sidebar]);
 
     // Fetch contacts on mount
     useEffect(() => {
