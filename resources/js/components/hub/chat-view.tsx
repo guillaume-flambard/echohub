@@ -38,6 +38,10 @@ export function ChatView({
     onMobileMenuClick,
     onOpenAISettings,
 }: ChatViewProps) {
+    const handleSuggestionClick = (message: string) => {
+        void onSendMessage(message);
+    };
+
     if (!contact) {
         return (
             <div className="flex h-full items-center justify-center">
@@ -164,7 +168,13 @@ export function ChatView({
                         </div>
                     </motion.div>
                 ) : (
-                    <MessageList key="messages" messages={messages} contact={contact} sending={sending} />
+                    <MessageList
+                        key="messages"
+                        messages={messages}
+                        contact={contact}
+                        sending={sending}
+                        onSendMessage={handleSuggestionClick}
+                    />
                 )}
             </AnimatePresence>
 

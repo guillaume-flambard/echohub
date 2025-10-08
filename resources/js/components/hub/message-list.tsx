@@ -13,9 +13,15 @@ interface MessageListProps {
     messages: Message[];
     contact: Contact;
     sending?: boolean;
+    onSendMessage?: (message: string) => void;
 }
 
-export function MessageList({ messages, contact, sending = false }: MessageListProps) {
+interface EmptyStateProps {
+    contact: Contact;
+    onSuggestionClick?: (suggestion: string) => void;
+}
+
+export function MessageList({ messages, contact, sending = false, onSendMessage }: MessageListProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -25,37 +31,7 @@ export function MessageList({ messages, contact, sending = false }: MessageListP
     if (messages.length === 0) {
         return (
             <div className="flex flex-1 items-center justify-center p-4">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-center"
-                >
-                    <p className="text-sm text-muted-foreground">
-                        No messages yet. Start a conversation with {contact.name}!
-                    </p>
-                    {contact.type === 'app' && contact.app && (
-                        <div className="mt-4 rounded-2xl bg-muted/50 p-4">
-                            <p className="text-xs font-semibold text-muted-foreground">
-                                Suggested questions:
-                            </p>
-                            <ul className="mt-2 space-y-2 text-left text-sm">
-                                <li className="flex items-center gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>What's the current status?</span>
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>Show me recent activity</span>
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>Give me a summary</span>
-                                </li>
-                            </ul>
-                        </div>
-                    )}
-                </motion.div>
+                <EmptyState contact={contact} onSuggestionClick={onSendMessage} />
             </div>
         );
     }
@@ -114,6 +90,61 @@ function TypingIndicator({ contact }: TypingIndicatorProps) {
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
                 />
+            </div>
+        </motion.div>
+    );
+}
+
+function EmptyState({ contact, onSuggestionClick }: EmptyStateProps) {
+    const suggestions = contact.type === 'app' && contact.app
+        ? [
+            "What's the current status?",
+            "Show me recent activity",
+            "Give me a summary",
+            "What are the latest updates?",
+        ]
+        : [
+            "Hello!",
+            "How are you?",
+            "What's new?",
+        ];
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="max-w-md text-center"
+        >
+            <div className="mb-4 flex justify-center">
+                <div className="flex size-16 items-center justify-center rounded-full bg-primary/10">
+                    {contact.type === 'app' ? (
+                        <Bot className="size-8 text-primary" />
+                    ) : (
+                        <User className="size-8 text-primary" />
+                    )}
+                </div>
+            </div>
+
+            <h3 className="text-lg font-semibold">
+                Start a conversation
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+                Ask {contact.name} anything or try one of these suggestions:
+            </p>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+                {suggestions.map((suggestion, index) => (
+                    <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onSuggestionClick?.(suggestion)}
+                        className="text-xs"
+                    >
+                        {suggestion}
+                    </Button>
+                ))}
             </div>
         </motion.div>
     );
