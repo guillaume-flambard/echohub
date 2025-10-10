@@ -1,0 +1,302 @@
+name: CI/CD Pipeline - EchoHub
+
+on:
+  push:
+    branches: [ main, staging, development ]
+  pull_request:
+    branches: [ main, staging ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: echohub
+
+jobs:
+  test:
+    name: 🧪 Test & Lint
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: echohub_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql, dom, filter, gd, json, pgsql, bcmath, opcache
+
+    - name: 📦 Setup Node.js & PNPM
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: 🔧 Enable Corepack for PNPM
+      run: corepack enable
+
+    - name: 📦 Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.composer/cache/files
+        key: composer-${{ hashFiles('composer.lock') }}
+        restore-keys: composer-
+
+    - name: 📦 Cache PNPM store
+      uses: actions/cache@v3
+      with:
+        path: ~/.pnpm-store
+        key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: ${{ runner.os }}-pnpm-
+
+    - name: 🔧 Install PHP Dependencies
+      run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+    - name: 🔧 Install Node Dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: ⚙️ Setup Test Environment
+      run: |
+        cp .env.example .env
+        php artisan key:generate
+        echo "DB_CONNECTION=pgsql" >> .env
+        echo "DB_HOST=127.0.0.1" >> .env
+        echo "DB_PORT=5432" >> .env
+        echo "DB_DATABASE=echohub_test" >> .env
+        echo "DB_USERNAME=postgres" >> .env
+        echo "DB_PASSWORD=postgres" >> .env
+
+    - name: 🗄️ Run Database Migrations
+      run: php artisan migrate --force
+
+    - name: 🏗️ Build Frontend Assets
+      run: SKIP_WAYFINDER=1 pnpm run build
+
+    - name: 🧪 Run PHP Tests
+      run: vendor/bin/pest --coverage
+
+    - name: 🔍 Run Linting
+      run: pnpm run lint
+
+    - name: 📝 Run Type Checking
+      run: pnpm run types
+
+  build-and-deploy:
+    name: 🚀 Build & Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/development')
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🔧 Set Environment Variables
+      id: env
+      run: |
+        if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+          echo "environment=production" >> $GITHUB_OUTPUT
+          echo "domain=hub.echotravel.app" >> $GITHUB_OUTPUT
+          echo "db_database=echohub_production" >> $GITHUB_OUTPUT
+          echo "db_username=echohub_prod" >> $GITHUB_OUTPUT
+          echo "app_debug=false" >> $GITHUB_OUTPUT
+          echo "log_level=warning" >> $GITHUB_OUTPUT
+        elif [[ $GITHUB_REF == 'refs/heads/staging' ]]; then
+          echo "environment=staging" >> $GITHUB_OUTPUT
+          echo "domain=staging-hub.echotravel.app" >> $GITHUB_OUTPUT
+          echo "db_database=echohub_staging" >> $GITHUB_OUTPUT
+          echo "db_username=echohub_staging" >> $GITHUB_OUTPUT
+          echo "app_debug=true" >> $GITHUB_OUTPUT
+          echo "log_level=debug" >> $GITHUB_OUTPUT
+        else
+          echo "environment=development" >> $GITHUB_OUTPUT
+          echo "domain=dev-hub.echotravel.app" >> $GITHUB_OUTPUT
+          echo "db_database=echohub" >> $GITHUB_OUTPUT
+          echo "db_username=echohub" >> $GITHUB_OUTPUT
+          echo "app_debug=true" >> $GITHUB_OUTPUT
+          echo "log_level=debug" >> $GITHUB_OUTPUT
+        fi
+
+    - name: 🔐 Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: 🏗️ Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.env.outputs.environment }}-${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.env.outputs.environment }}-latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        labels: |
+          org.opencontainers.image.source=${{ github.event.repository.html_url }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+
+    - name: 🚀 Deploy to VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script: |
+          set -e
+          
+          # Environment variables
+          export ENVIRONMENT="${{ steps.env.outputs.environment }}"
+          export IMAGE_TAG="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.env.outputs.environment }}-${{ github.sha }}"
+          export DOMAIN="${{ steps.env.outputs.domain }}"
+          export APP_KEY="${{ secrets.APP_KEY }}"
+          
+          # Database configuration (using Dokploy PostgreSQL container)
+          export DB_HOST="dokploy-postgres"
+          export DB_DATABASE="${{ steps.env.outputs.db_database }}"
+          export DB_USERNAME="${{ steps.env.outputs.db_username }}"
+          
+          # Environment-specific database password
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD_PROD }}"
+          elif [[ "$ENVIRONMENT" == "staging" ]]; then
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD_STAGING }}"
+          else
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD_DEV }}"
+          fi
+          
+          echo "🚀 Deploying EchoHub to $ENVIRONMENT environment..."
+          echo "📦 Image: $IMAGE_TAG"
+          echo "🌐 Domain: $DOMAIN"
+          
+          # Create deployment directory
+          mkdir -p /opt/echohub-$ENVIRONMENT
+          cd /opt/echohub-$ENVIRONMENT
+          
+          # Backup current deployment
+          if [ -f docker-compose.yml ]; then
+            echo "📦 Creating backup of current deployment..."
+            cp docker-compose.yml docker-compose.yml.backup.$(date +%Y%m%d_%H%M%S)
+          fi
+          
+          # Create optimized docker-compose.yml
+          cat > docker-compose.yml << 'COMPOSE_EOF'
+          version: '3.8'
+          
+          services:
+            echohub:
+              image: ${IMAGE_TAG}
+              container_name: echohub-${ENVIRONMENT}
+              restart: unless-stopped
+              environment:
+                - APP_NAME=EchoHub
+                - APP_ENV=${ENVIRONMENT}
+                - APP_KEY=${APP_KEY}
+                - APP_DEBUG=${{ steps.env.outputs.app_debug }}
+                - APP_URL=https://${DOMAIN}
+                - LOG_LEVEL=${{ steps.env.outputs.log_level }}
+                
+                # Database Configuration
+                - DB_CONNECTION=pgsql
+                - DB_HOST=${DB_HOST}
+                - DB_PORT=5432
+                - DB_DATABASE=${DB_DATABASE}
+                - DB_USERNAME=${DB_USERNAME}
+                - DB_PASSWORD=${DB_PASSWORD}
+                
+                # AI Integration
+                - MINERVA_AI_PROVIDER=ollama
+                - MINERVA_AI_BASE_URL=http://ollama-service:11434
+                - MINERVA_AI_MODEL=qwen2.5:3b
+                
+                # Performance (using file cache until Redis is setup)
+                - CACHE_DRIVER=file
+                - SESSION_DRIVER=file
+                - QUEUE_CONNECTION=database
+                
+              networks:
+                - dokploy-network
+              
+              labels:
+                # Traefik Configuration (compatible with Dokploy's Traefik container)
+                - "traefik.enable=true"
+                - "traefik.http.routers.echohub-${ENVIRONMENT}.rule=Host(\`${DOMAIN}\`)"
+                - "traefik.http.routers.echohub-${ENVIRONMENT}.entrypoints=websecure"
+                - "traefik.http.routers.echohub-${ENVIRONMENT}.tls=true"
+                - "traefik.http.routers.echohub-${ENVIRONMENT}.tls.certresolver=letsencrypt"
+                - "traefik.http.services.echohub-${ENVIRONMENT}.loadbalancer.server.port=8000"
+          
+          networks:
+            dokploy-network:
+              external: true
+          COMPOSE_EOF
+          
+          # Pull latest image
+          echo "📥 Pulling latest image..."
+          docker-compose pull
+          
+          # Deploy with zero-downtime strategy
+          echo "🔄 Deploying with zero-downtime..."
+          docker-compose up -d --remove-orphans
+          
+          # Wait for health check
+          echo "🏥 Waiting for application to be healthy..."
+          sleep 30
+          
+          # Health check with retries
+          HEALTH_URL="https://$DOMAIN/up"
+          for i in {1..5}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" || echo "000")
+            if [ "$HTTP_CODE" == "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_CODE)"
+              break
+            else
+              echo "⏳ Health check attempt $i/5 (HTTP $HTTP_CODE), waiting..."
+              sleep 10
+              if [ $i -eq 5 ]; then
+                echo "❌ Health check failed after 5 attempts"
+                docker-compose logs echohub
+                exit 1
+              fi
+            fi
+          done
+          
+          # Cleanup old containers and images
+          echo "🧹 Cleaning up old resources..."
+          docker system prune -f
+          docker images | grep "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}" | grep "$ENVIRONMENT" | tail -n +4 | awk '{print $3}' | xargs -r docker rmi
+          
+          echo "🎉 EchoHub $ENVIRONMENT deployed successfully!"
+          echo "🌐 Application URL: https://$DOMAIN"
+
+    - name: ✅ Deployment Success Notification
+      if: success()
+      run: |
+        echo "🎉 Successfully deployed EchoHub to ${{ steps.env.outputs.environment }}"
+        echo "🌐 URL: https://${{ steps.env.outputs.domain }}"
+        echo "📦 Image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.env.outputs.environment }}-${{ github.sha }}"
+
+    - name: ❌ Deployment Failure Notification
+      if: failure()
+      run: |
+        echo "❌ Failed to deploy EchoHub to ${{ steps.env.outputs.environment }}"
+        echo "🔍 Check the logs above for details"

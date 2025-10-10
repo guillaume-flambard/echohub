@@ -13,8 +13,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
   # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
-  # Install dependencies
-RUN pnpm install --frozen-lockfile
+  # Install dependencies (no frozen lockfile since we're updating packages)
+RUN pnpm install --no-frozen-lockfile
 
   # Copy frontend source files (including pre-generated routes)
 COPY resources ./resources
