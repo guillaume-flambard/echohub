@@ -50,8 +50,8 @@ export interface App {
     matrix_user_id: string;
     status: 'online' | 'offline' | 'degraded';
     capabilities: string[];
-    api_config?: Record<string, any>;
-    metadata?: Record<string, any>;
+    api_config?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
     created_at: string;
     updated_at: string;
 }
@@ -64,7 +64,7 @@ export interface Contact {
     app_id?: number;
     name: string;
     avatar?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     created_at: string;
     updated_at: string;
     app?: App;

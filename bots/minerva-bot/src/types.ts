@@ -5,8 +5,8 @@ export interface AppConfig {
   matrix_user_id: string;
   status: 'online' | 'offline' | 'degraded';
   capabilities: string[];
-  api_config?: Record<string, any>;
-  metadata?: Record<string, any>;
+  api_config?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MinervaMessage {
@@ -20,7 +20,7 @@ export interface AppContext {
   app_name: string;
   app_domain: string;
   capabilities: string[];
-  current_data: Record<string, any>;
+  current_data: Record<string, unknown>;
 }
 
 export interface ConversationMessage {

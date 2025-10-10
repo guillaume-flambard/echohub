@@ -36,8 +36,8 @@ export class BotManager {
       }
 
       console.log(`✅ Started ${this.bots.size} Minerva bot instances`);
-    } catch (error: any) {
-      console.error('❌ Error loading apps:', error.message);
+    } catch (error: unknown) {
+      console.error('❌ Error loading apps:', error instanceof Error ? error.message : String(error));
       throw error;
     }
   }
@@ -65,8 +65,8 @@ export class BotManager {
 
       await bot.start();
       this.bots.set(app.matrix_user_id, bot);
-    } catch (error: any) {
-      console.error(`❌ Failed to start bot for ${app.name}:`, error.message);
+    } catch (error: unknown) {
+      console.error(`❌ Failed to start bot for ${app.name}:`, error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -86,7 +86,7 @@ export class BotManager {
    */
   async stopAll() {
     console.log('🛑 Stopping all bots...');
-    for (const [matrixUserId, bot] of this.bots.entries()) {
+    for (const [, bot] of this.bots.entries()) {
       await bot.stop();
     }
     this.bots.clear();
@@ -120,9 +120,9 @@ export class BotManager {
       console.log(`✅ Logged in to Matrix as ${username}`);
 
       return accessToken;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error(
-        `Failed to login to Matrix for ${app.name}: ${error.message}`
+        `Failed to login to Matrix for ${app.name}: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }

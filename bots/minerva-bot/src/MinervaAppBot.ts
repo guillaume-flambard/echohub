@@ -47,7 +47,7 @@ export class MinervaAppBot {
     console.log(`✅ ${this.app.name} bot started (${this.app.matrix_user_id})`);
   }
 
-  private async handleMessage(roomId: string, event: MessageEvent<any>) {
+  private async handleMessage(roomId: string, event: MessageEvent<Record<string, unknown>>) {
     // Ignore our own messages
     if (event.sender === this.app.matrix_user_id) return;
 
@@ -111,11 +111,11 @@ export class MinervaAppBot {
       );
 
       return response.data;
-    } catch (error: any) {
-      console.error('Error calling Minerva API:', error.message);
+    } catch (error: unknown) {
+      console.error('Error calling Minerva API:', error instanceof Error ? error.message : String(error));
       return {
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }

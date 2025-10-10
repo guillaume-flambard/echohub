@@ -28,8 +28,8 @@ export default function MatrixLoginForm() {
             } else {
                 setError('Login failed. Please check your credentials.');
             }
-        } catch (err: any) {
-            setError(err.message || 'Login failed');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Login failed');
         } finally {
             setLoading(false);
         }
@@ -40,8 +40,8 @@ export default function MatrixLoginForm() {
         try {
             await logout();
             setSuccess(false);
-        } catch (err: any) {
-            setError(err.message || 'Logout failed');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Logout failed');
         } finally {
             setLoading(false);
         }

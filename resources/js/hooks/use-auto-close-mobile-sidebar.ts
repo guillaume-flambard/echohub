@@ -7,14 +7,8 @@ import { useEffect } from 'react';
  * Safe to use even without SidebarProvider - will do nothing if provider is missing
  */
 export function useAutoCloseMobileSidebar() {
-    // Safely get sidebar context (might not be available in all layouts)
-    let sidebar;
-    try {
-        sidebar = useSidebar();
-    } catch {
-        // No SidebarProvider available, that's ok
-        sidebar = null;
-    }
+    // Always call the hook, but handle the case where provider is missing
+    const sidebar = useSidebar();
 
     useEffect(() => {
         if (sidebar?.isMobile) {
