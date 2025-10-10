@@ -1,5 +1,14 @@
 import * as sdk from 'matrix-js-sdk';
 import { create } from 'zustand';
+import { getErrorMessage } from '@/lib/error-utils';
+
+// Matrix SDK types
+interface MatrixEvent {
+    getType(): string;
+    getSender(): string;
+    getContent(): { body?: string };
+    getTs(): number;
+}
 
 interface MatrixMessage {
     sender: string;
@@ -76,7 +85,7 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
             });
 
             // Listen for new messages
-            client.on(sdk.RoomEvent.Timeline, (event: any) => {
+            client.on(sdk.RoomEvent.Timeline, (event: MatrixEvent) => {
                 if (event.getType() === 'm.room.message') {
                     // Trigger re-render when new messages arrive
                     set((state) => ({ ...state }));
@@ -136,8 +145,8 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
 
             // Send message
             await client.sendTextMessage(roomId, message);
-        } catch (error: any) {
-            set({ error: error.message || 'Failed to send message' });
+        } catch (error: unknown) {
+            set({ error: getErrorMessage(error) || 'Failed to send message' });
             throw error;
         }
     },
@@ -203,7 +212,7 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
                 // Listen for new messages
                 client.on(
                     sdk.RoomEvent.Timeline,
-                    (event: any) => {
+                    (event: MatrixEvent) => {
                         if (event.getType() === 'm.room.message') {
                             // Trigger re-render when new messages arrive
                             set((state) => ({ ...state }));
@@ -249,7 +258,7 @@ async function findOrCreateDirectRoom(
     const { room_id } = await client.createRoom({
         is_direct: true,
         invite: [targetUserId],
-        preset: 'trusted_private_chat' as any,
+        preset: 'trusted_private_chat' as sdk.Preset,
     });
 
     return room_id;

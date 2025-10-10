@@ -25,7 +25,7 @@ export function ContactList({
     loading = false,
     error = null,
     showMobileToggle = false,
-    isMobileOpen = false,
+    isMobileOpen: _isMobileOpen = false,
     onMobileToggle,
 }: ContactListProps) {
     const [searchQuery, setSearchQuery] = useState('');
