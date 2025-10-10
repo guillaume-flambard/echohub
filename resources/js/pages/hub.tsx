@@ -133,7 +133,6 @@ export default function Hub() {
                         loading={contactsLoading}
                         error={contactsError}
                         showMobileToggle={!!selectedContact}
-                        isMobileOpen={isMobileContactsOpen}
                         onMobileToggle={() =>
                             setIsMobileContactsOpen(!isMobileContactsOpen)
                         }

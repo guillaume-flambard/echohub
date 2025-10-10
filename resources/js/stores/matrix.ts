@@ -2,13 +2,8 @@ import * as sdk from 'matrix-js-sdk';
 import { create } from 'zustand';
 import { getErrorMessage } from '@/lib/error-utils';
 
-// Matrix SDK types
-interface MatrixEvent {
-    getType(): string;
-    getSender(): string;
-    getContent(): { body?: string };
-    getTs(): number;
-}
+// Matrix SDK types - using the actual SDK types
+type MatrixEvent = sdk.MatrixEvent;
 
 interface MatrixMessage {
     sender: string;
@@ -210,15 +205,12 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
                 });
 
                 // Listen for new messages
-                client.on(
-                    sdk.RoomEvent.Timeline,
-                    (event: MatrixEvent) => {
-                        if (event.getType() === 'm.room.message') {
-                            // Trigger re-render when new messages arrive
-                            set((state) => ({ ...state }));
-                        }
-                    },
-                );
+                client.on(sdk.RoomEvent.Timeline, (event: MatrixEvent) => {
+                    if (event.getType() === 'm.room.message') {
+                        // Trigger re-render when new messages arrive
+                        set((state) => ({ ...state }));
+                    }
+                });
 
                 set({
                     client,
