@@ -13,9 +13,12 @@ export default defineConfig({
         }),
         react(),
         tailwindcss(),
-        wayfinder({
-            formVariants: true,
-        }),
+        // Skip Wayfinder in production builds - routes are pre-generated and committed
+        ...(process.env.SKIP_WAYFINDER ? [] : [
+            wayfinder({
+                formVariants: true,
+            }),
+        ]),
     ],
     esbuild: {
         jsx: 'automatic',

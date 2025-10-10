@@ -12,14 +12,14 @@ import {
 import { dashboard, hub } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, MessageSquare } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: LayoutDashboard,
     },
     {
         title: 'Hub',
@@ -35,7 +35,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={hub()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

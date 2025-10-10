@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
 
         // Seed multi-app hub data
         $this->call([
+            AppSeeder::class,              // Create apps first
             AppConnectionSeeder::class,
             PermissionSeeder::class,
             ServiceAccountSeeder::class,

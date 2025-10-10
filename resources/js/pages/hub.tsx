@@ -1,4 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
+import { AISettingsModal } from '@/components/hub/ai-settings-modal';
+import { AppInfoPanel } from '@/components/hub/app-info-panel';
 import { ChatView } from '@/components/hub/chat-view';
 import { ContactList } from '@/components/hub/contact-list';
 import { useContactsStore } from '@/stores/contacts';
@@ -17,6 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Hub() {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [isMobileContactsOpen, setIsMobileContactsOpen] = useState(false);
+    const [isAISettingsOpen, setIsAISettingsOpen] = useState(false);
 
     // Zustand stores
     const { contacts, loading: contactsLoading, error: contactsError, fetchContacts } = useContactsStore();
@@ -35,6 +39,10 @@ export default function Hub() {
                 const contact = contacts.find(c => c.id === parseInt(savedContactId));
                 if (contact) {
                     setSelectedContact(contact);
+                    // If restoring a contact on mobile, close the contacts panel
+                    if (window.innerWidth < 768) {
+                        setIsMobileContactsOpen(false);
+                    }
                 }
             }
         }
@@ -53,6 +61,7 @@ export default function Hub() {
 
     const handleSelectContact = (contact: Contact) => {
         setSelectedContact(contact);
+        setIsMobileContactsOpen(false); // Close mobile contacts on selection
         // Persist selected contact to localStorage
         localStorage.setItem('hub_selected_contact_id', contact.id.toString());
     };
@@ -79,31 +88,64 @@ export default function Hub() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Hub" />
 
-            <div className="flex h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+            <div className="relative flex h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                 {/* Contact List Sidebar */}
-                <div className="w-80 border-r border-sidebar-border bg-card">
+                <div
+                    className={`
+                        w-full md:w-80 h-full
+                        border-r border-sidebar-border bg-card
+                        transition-transform duration-200 ease-in-out
+                        ${
+                            // Desktop: always visible (static)
+                            'md:relative md:translate-x-0'
+                        }
+                        ${
+                            // Mobile: conditional visibility
+                            selectedContact
+                                ? `absolute z-10 ${isMobileContactsOpen ? 'translate-x-0' : '-translate-x-full'}`
+                                : 'relative translate-x-0'
+                        }
+                    `}
+                >
                     <ContactList
                         contacts={contacts}
                         selectedContact={selectedContact}
                         onSelectContact={handleSelectContact}
                         loading={contactsLoading}
                         error={contactsError}
+                        showMobileToggle={!!selectedContact}
+                        isMobileOpen={isMobileContactsOpen}
+                        onMobileToggle={() => setIsMobileContactsOpen(!isMobileContactsOpen)}
                     />
                 </div>
 
-                {/* Chat View */}
-                <div className="flex-1 bg-background">
-                    <ChatView
-                        contact={selectedContact}
-                        messages={currentMessages}
-                        loading={messagesLoading}
-                        sending={isSending}
-                        error={messagesError}
-                        onSendMessage={handleSendMessage}
-                        onClearHistory={handleClearHistory}
-                    />
+                {/* Chat View - Hidden on mobile when no contact selected */}
+                <div className={`flex flex-1 bg-background ${!selectedContact ? 'hidden md:flex' : ''}`}>
+                    <div className="flex-1">
+                        <ChatView
+                            contact={selectedContact}
+                            messages={currentMessages}
+                            loading={messagesLoading}
+                            sending={isSending}
+                            error={messagesError}
+                            onSendMessage={handleSendMessage}
+                            onClearHistory={handleClearHistory}
+                            showMobileMenuButton={!!selectedContact && !isMobileContactsOpen}
+                            onMobileMenuClick={() => setIsMobileContactsOpen(true)}
+                            onOpenAISettings={() => setIsAISettingsOpen(true)}
+                        />
+                    </div>
+
+                    {/* App Info Panel - Only show for app contacts on large screens */}
+                    {selectedContact && <AppInfoPanel contact={selectedContact} />}
                 </div>
             </div>
+
+            {/* AI Settings Modal */}
+            <AISettingsModal
+                open={isAISettingsOpen}
+                onOpenChange={setIsAISettingsOpen}
+            />
         </AppLayout>
     );
 }
