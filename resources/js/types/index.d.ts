@@ -52,6 +52,8 @@ export interface App {
     capabilities: string[];
     api_config?: Record<string, unknown>;
     metadata?: Record<string, unknown>;
+    last_ping?: string;
+    api_key?: string;
     created_at: string;
     updated_at: string;
 }

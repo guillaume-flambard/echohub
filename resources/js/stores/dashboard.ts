@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import axios from '@/bootstrap';
+import { create } from 'zustand';
 
 interface DashboardStats {
     total_apps: number;
@@ -52,9 +52,9 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         try {
             const response = await axios.get('/api/dashboard/stats');
             set({ stats: response.data, loading: false });
-        } catch (err: any) {
+        } catch {
             set({
-                error: err.response?.data?.message || err.message || 'Failed to fetch stats',
+                error: 'Failed to fetch stats',
                 loading: false,
             });
         }
@@ -64,10 +64,13 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         set({ loading: true, error: null });
         try {
             const response = await axios.get('/api/dashboard/activity');
-            set({ recentActivity: response.data.recent_activity || [], loading: false });
-        } catch (err: any) {
             set({
-                error: err.response?.data?.message || err.message || 'Failed to fetch activity',
+                recentActivity: response.data.recent_activity || [],
+                loading: false,
+            });
+        } catch {
+            set({
+                error: 'Failed to fetch activity',
                 loading: false,
             });
         }
@@ -78,9 +81,9 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         try {
             const response = await axios.get('/api/dashboard/trends');
             set({ trends: response.data.trends || [], loading: false });
-        } catch (err: any) {
+        } catch {
             set({
-                error: err.response?.data?.message || err.message || 'Failed to fetch trends',
+                error: 'Failed to fetch trends',
                 loading: false,
             });
         }
@@ -101,9 +104,9 @@ export const useDashboardStore = create<DashboardState>((set) => ({
                 trends: trendsRes.data.trends || [],
                 loading: false,
             });
-        } catch (err: any) {
+        } catch {
             set({
-                error: err.response?.data?.message || err.message || 'Failed to fetch dashboard data',
+                error: 'Failed to fetch dashboard data',
                 loading: false,
             });
         }

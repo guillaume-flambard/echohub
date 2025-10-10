@@ -1,4 +1,5 @@
 import axios from '@/bootstrap';
+import { getAxiosErrorMessage } from '@/lib/error-utils';
 import { create } from 'zustand';
 
 interface AggregatedStats {
@@ -12,7 +13,7 @@ interface AggregatedStats {
         {
             app_name: string;
             status: string;
-            stats?: any;
+            stats?: Record<string, unknown>;
             error?: string;
         }
     >;
@@ -47,12 +48,16 @@ interface AggregatorState {
     stats: AggregatedStats | null;
     activity: ActivityLog[];
     analytics: Analytics | null;
-    searchResults: Record<number, any>;
+    searchResults: Record<number, Record<string, unknown>>;
     loading: boolean;
     error: string | null;
     fetchStats: () => Promise<void>;
     fetchActivity: (limit?: number) => Promise<void>;
-    fetchAnalytics: (appId?: number, from?: string, to?: string) => Promise<void>;
+    fetchAnalytics: (
+        appId?: number,
+        from?: string,
+        to?: string,
+    ) => Promise<void>;
     search: (query: string, apps?: number[]) => Promise<void>;
     fetchLogs: (filters?: {
         app_id?: number;
@@ -63,7 +68,7 @@ interface AggregatorState {
     }) => Promise<ActivityLog[]>;
 }
 
-export const useAggregatorStore = create<AggregatorState>((set, get) => ({
+export const useAggregatorStore = create<AggregatorState>((set) => ({
     stats: null,
     activity: [],
     analytics: null,
@@ -79,9 +84,9 @@ export const useAggregatorStore = create<AggregatorState>((set, get) => ({
                 stats: response.data.stats,
                 loading: false,
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
         }
@@ -97,9 +102,9 @@ export const useAggregatorStore = create<AggregatorState>((set, get) => ({
                 activity: response.data.activity,
                 loading: false,
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
         }
@@ -119,9 +124,9 @@ export const useAggregatorStore = create<AggregatorState>((set, get) => ({
                 analytics: response.data.analytics,
                 loading: false,
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
         }
@@ -140,9 +145,9 @@ export const useAggregatorStore = create<AggregatorState>((set, get) => ({
                 searchResults: response.data.results,
                 loading: false,
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
         }
@@ -157,9 +162,9 @@ export const useAggregatorStore = create<AggregatorState>((set, get) => ({
             const logs = response.data.logs;
             set({ loading: false });
             return logs;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
             throw err;

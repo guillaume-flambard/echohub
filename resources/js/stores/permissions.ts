@@ -20,23 +20,35 @@ interface PermissionsState {
         userId: number,
         appId: number,
         scopes: string[],
-        expiresAt?: string | null
+        expiresAt?: string | null,
     ) => Promise<Permission>;
     revokePermission: (userId: number, appId: number) => Promise<void>;
-    addScopes: (userId: number, appId: number, scopes: string[]) => Promise<Permission>;
-    removeScopes: (userId: number, appId: number, scopes: string[]) => Promise<Permission>;
-    extendPermission: (userId: number, appId: number, expiresAt: string) => Promise<Permission>;
+    addScopes: (
+        userId: number,
+        appId: number,
+        scopes: string[],
+    ) => Promise<Permission>;
+    removeScopes: (
+        userId: number,
+        appId: number,
+        scopes: string[],
+    ) => Promise<Permission>;
+    extendPermission: (
+        userId: number,
+        appId: number,
+        expiresAt: string,
+    ) => Promise<Permission>;
     makePermanent: (userId: number, appId: number) => Promise<Permission>;
     bulkGrant: (
         userIds: number[],
         appId: number,
         scopes: string[],
-        expiresAt?: string | null
+        expiresAt?: string | null,
     ) => Promise<Permission[]>;
     bulkRevoke: (userIds: number[], appId: number) => Promise<void>;
 }
 
-export const usePermissionsStore = create<PermissionsState>((set, get) => ({
+export const usePermissionsStore = create<PermissionsState>((set) => ({
     permissions: [],
     loading: false,
     error: null,
@@ -49,9 +61,9 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
                 permissions: response.data.permissions || response.data,
                 loading: false,
             });
-        } catch (err: any) {
+        } catch {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
         }
@@ -75,9 +87,9 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
             }));
 
             return permission;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
             throw err;
@@ -94,13 +106,13 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
 
             set((state) => ({
                 permissions: state.permissions.filter(
-                    (p) => !(p.user_id === userId && p.app_id === appId)
+                    (p) => !(p.user_id === userId && p.app_id === appId),
                 ),
                 loading: false,
             }));
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
             throw err;
@@ -120,15 +132,15 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
 
             set((state) => ({
                 permissions: state.permissions.map((p) =>
-                    p.user_id === userId && p.app_id === appId ? permission : p
+                    p.user_id === userId && p.app_id === appId ? permission : p,
                 ),
                 loading: false,
             }));
 
             return permission;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
             throw err;
@@ -138,25 +150,28 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
     removeScopes: async (userId, appId, scopes) => {
         set({ loading: true, error: null });
         try {
-            const response = await axios.post('/hub/permissions/remove-scopes', {
-                user_id: userId,
-                app_id: appId,
-                scopes,
-            });
+            const response = await axios.post(
+                '/hub/permissions/remove-scopes',
+                {
+                    user_id: userId,
+                    app_id: appId,
+                    scopes,
+                },
+            );
 
             const permission = response.data.permission;
 
             set((state) => ({
                 permissions: state.permissions.map((p) =>
-                    p.user_id === userId && p.app_id === appId ? permission : p
+                    p.user_id === userId && p.app_id === appId ? permission : p,
                 ),
                 loading: false,
             }));
 
             return permission;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
             throw err;
@@ -176,15 +191,15 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
 
             set((state) => ({
                 permissions: state.permissions.map((p) =>
-                    p.user_id === userId && p.app_id === appId ? permission : p
+                    p.user_id === userId && p.app_id === appId ? permission : p,
                 ),
                 loading: false,
             }));
 
             return permission;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
             throw err;
@@ -194,24 +209,27 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
     makePermanent: async (userId, appId) => {
         set({ loading: true, error: null });
         try {
-            const response = await axios.post('/hub/permissions/make-permanent', {
-                user_id: userId,
-                app_id: appId,
-            });
+            const response = await axios.post(
+                '/hub/permissions/make-permanent',
+                {
+                    user_id: userId,
+                    app_id: appId,
+                },
+            );
 
             const permission = response.data.permission;
 
             set((state) => ({
                 permissions: state.permissions.map((p) =>
-                    p.user_id === userId && p.app_id === appId ? permission : p
+                    p.user_id === userId && p.app_id === appId ? permission : p,
                 ),
                 loading: false,
             }));
 
             return permission;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
             throw err;
@@ -236,9 +254,9 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
             }));
 
             return permissions;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
             throw err;
@@ -255,13 +273,13 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
 
             set((state) => ({
                 permissions: state.permissions.filter(
-                    (p) => !(userIds.includes(p.user_id) && p.app_id === appId)
+                    (p) => !(userIds.includes(p.user_id) && p.app_id === appId),
                 ),
                 loading: false,
             }));
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: 'Operation failed',
                 loading: false,
             });
             throw err;

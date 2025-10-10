@@ -16,9 +16,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { getErrorMessage } from '@/lib/error-utils';
 import axios from 'axios';
 import { Check, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface AISettingsModalProps {
     open: boolean;
@@ -43,12 +44,53 @@ export function AISettingsModal({ open, onOpenChange }: AISettingsModalProps) {
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [setting, setSetting] = useState<AISetting | null>(null);
-    const [provider, setProvider] = useState<'ollama' | 'openai' | 'anthropic'>('ollama');
+    const [provider, setProvider] = useState<'ollama' | 'openai' | 'anthropic'>(
+        'ollama',
+    );
     const [model, setModel] = useState('');
     const [baseUrl, setBaseUrl] = useState('http://localhost:11434');
     const [apiKey, setApiKey] = useState('');
     const [availableModels, setAvailableModels] = useState<AIModel[]>([]);
     const [loadingModels, setLoadingModels] = useState(false);
+
+    const loadSettings = async () => {
+        try {
+            const response = await axios.get('/api/ai-settings');
+            const data = response.data.setting;
+            setSetting(data);
+            setProvider(data.provider);
+            setModel(data.model);
+            setBaseUrl(data.base_url);
+            // Don't load API key for security
+        } catch (error: unknown) {
+            console.error(
+                'Failed to load AI settings:',
+                getErrorMessage(error),
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadAvailableModels = useCallback(async () => {
+        setLoadingModels(true);
+        try {
+            const response = await axios.get('/api/ai-settings/models', {
+                params: {
+                    provider,
+                    base_url: provider === 'ollama' ? baseUrl : undefined,
+                },
+            });
+            setAvailableModels(response.data.models);
+        } catch (error: unknown) {
+            console.error(
+                'Failed to load available models:',
+                getErrorMessage(error),
+            );
+        } finally {
+            setLoadingModels(false);
+        }
+    }, [provider, baseUrl]);
 
     // Load current settings
     useEffect(() => {
@@ -62,40 +104,7 @@ export function AISettingsModal({ open, onOpenChange }: AISettingsModalProps) {
         if (open && provider) {
             loadAvailableModels();
         }
-    }, [open, provider, baseUrl]);
-
-    const loadSettings = async () => {
-        try {
-            const response = await axios.get('/api/ai-settings');
-            const data = response.data.setting;
-            setSetting(data);
-            setProvider(data.provider);
-            setModel(data.model);
-            setBaseUrl(data.base_url);
-            // Don't load API key for security
-        } catch (error) {
-            console.error('Failed to load AI settings:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const loadAvailableModels = async () => {
-        setLoadingModels(true);
-        try {
-            const response = await axios.get('/api/ai-settings/models', {
-                params: {
-                    provider,
-                    base_url: provider === 'ollama' ? baseUrl : undefined,
-                },
-            });
-            setAvailableModels(response.data.models);
-        } catch (error) {
-            console.error('Failed to load available models:', error);
-        } finally {
-            setLoadingModels(false);
-        }
-    };
+    }, [open, provider, loadAvailableModels]);
 
     const handleSave = async () => {
         setSaving(true);
@@ -111,8 +120,11 @@ export function AISettingsModal({ open, onOpenChange }: AISettingsModalProps) {
                 setSaved(false);
                 onOpenChange(false);
             }, 1500);
-        } catch (error) {
-            console.error('Failed to save AI settings:', error);
+        } catch (error: unknown) {
+            console.error(
+                'Failed to save AI settings:',
+                getErrorMessage(error),
+            );
         } finally {
             setSaving(false);
         }
@@ -140,20 +152,36 @@ export function AISettingsModal({ open, onOpenChange }: AISettingsModalProps) {
                         {/* Provider */}
                         <div className="space-y-2">
                             <Label htmlFor="provider">Provider</Label>
-                            <Select value={provider} onValueChange={(v) => setProvider(v as any)}>
+                            <Select
+                                value={provider}
+                                onValueChange={(v: string) =>
+                                    setProvider(
+                                        v as 'ollama' | 'openai' | 'anthropic',
+                                    )
+                                }
+                            >
                                 <SelectTrigger id="provider">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="ollama">Ollama (Local)</SelectItem>
-                                    <SelectItem value="openai">OpenAI</SelectItem>
-                                    <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
+                                    <SelectItem value="ollama">
+                                        Ollama (Local)
+                                    </SelectItem>
+                                    <SelectItem value="openai">
+                                        OpenAI
+                                    </SelectItem>
+                                    <SelectItem value="anthropic">
+                                        Anthropic (Claude)
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
-                                {provider === 'ollama' && 'Free local AI models'}
-                                {provider === 'openai' && 'Requires OpenAI API key'}
-                                {provider === 'anthropic' && 'Requires Anthropic API key'}
+                                {provider === 'ollama' &&
+                                    'Free local AI models'}
+                                {provider === 'openai' &&
+                                    'Requires OpenAI API key'}
+                                {provider === 'anthropic' &&
+                                    'Requires Anthropic API key'}
                             </p>
                         </div>
 
@@ -182,7 +210,11 @@ export function AISettingsModal({ open, onOpenChange }: AISettingsModalProps) {
                                     type="password"
                                     value={apiKey}
                                     onChange={(e) => setApiKey(e.target.value)}
-                                    placeholder={hasApiKey ? '••••••••••••••••' : 'Enter API key'}
+                                    placeholder={
+                                        hasApiKey
+                                            ? '••••••••••••••••'
+                                            : 'Enter API key'
+                                    }
                                 />
                                 <p className="text-xs text-muted-foreground">
                                     {hasApiKey
@@ -195,7 +227,11 @@ export function AISettingsModal({ open, onOpenChange }: AISettingsModalProps) {
                         {/* Model */}
                         <div className="space-y-2">
                             <Label htmlFor="model">Model</Label>
-                            <Select value={model} onValueChange={setModel} disabled={loadingModels}>
+                            <Select
+                                value={model}
+                                onValueChange={setModel}
+                                disabled={loadingModels}
+                            >
                                 <SelectTrigger id="model">
                                     <SelectValue placeholder="Select a model" />
                                 </SelectTrigger>
@@ -223,10 +259,17 @@ export function AISettingsModal({ open, onOpenChange }: AISettingsModalProps) {
                 )}
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        disabled={saving}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleSave} disabled={loading || saving || !model}>
+                    <Button
+                        onClick={handleSave}
+                        disabled={loading || saving || !model}
+                    >
                         {saving ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

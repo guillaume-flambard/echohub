@@ -1,4 +1,5 @@
 import axios from '@/bootstrap';
+import { getAxiosErrorMessage } from '@/lib/error-utils';
 import type { App } from '@/types';
 import { create } from 'zustand';
 
@@ -12,11 +13,17 @@ interface AppsState {
     deleteApp: (id: number) => Promise<void>;
     testConnection: (id: number) => Promise<boolean>;
     syncMetadata: (id: number) => Promise<void>;
-    getAppStats: (id: number, type?: string) => Promise<any>;
-    getAppActivity: (id: number, limit?: number) => Promise<any>;
+    getAppStats: (
+        id: number,
+        type?: string,
+    ) => Promise<Record<string, unknown>>;
+    getAppActivity: (
+        id: number,
+        limit?: number,
+    ) => Promise<Record<string, unknown>>;
 }
 
-export const useAppsStore = create<AppsState>((set, get) => ({
+export const useAppsStore = create<AppsState>((set) => ({
     apps: [],
     loading: false,
     error: null,
@@ -26,9 +33,9 @@ export const useAppsStore = create<AppsState>((set, get) => ({
         try {
             const response = await axios.get('/api/apps');
             set({ apps: response.data.apps || response.data, loading: false });
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
         }
@@ -46,9 +53,9 @@ export const useAppsStore = create<AppsState>((set, get) => ({
             }));
 
             return newApp;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
             throw err;
@@ -63,15 +70,15 @@ export const useAppsStore = create<AppsState>((set, get) => ({
 
             set((state) => ({
                 apps: state.apps.map((app) =>
-                    app.id === id ? updatedApp : app
+                    app.id === id ? updatedApp : app,
                 ),
                 loading: false,
             }));
 
             return updatedApp;
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
             throw err;
@@ -87,9 +94,9 @@ export const useAppsStore = create<AppsState>((set, get) => ({
                 apps: state.apps.filter((app) => app.id !== id),
                 loading: false,
             }));
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message,
+                error: getAxiosErrorMessage(err),
                 loading: false,
             });
             throw err;
@@ -98,19 +105,21 @@ export const useAppsStore = create<AppsState>((set, get) => ({
 
     testConnection: async (id) => {
         try {
-            const response = await axios.post(`/hub/apps/${id}/test-connection`);
+            const response = await axios.post(
+                `/hub/apps/${id}/test-connection`,
+            );
             const { success, status } = response.data;
 
             // Update app status in store
             set((state) => ({
                 apps: state.apps.map((app) =>
-                    app.id === id ? { ...app, status } : app
+                    app.id === id ? { ...app, status } : app,
                 ),
             }));
 
             return success;
-        } catch (err: any) {
-            set({ error: err.response?.data?.message || err.message });
+        } catch (err: unknown) {
+            set({ error: getAxiosErrorMessage(err) });
             return false;
         }
     },
@@ -122,11 +131,11 @@ export const useAppsStore = create<AppsState>((set, get) => ({
 
             set((state) => ({
                 apps: state.apps.map((app) =>
-                    app.id === id ? updatedApp : app
+                    app.id === id ? updatedApp : app,
                 ),
             }));
-        } catch (err: any) {
-            set({ error: err.response?.data?.message || err.message });
+        } catch (err: unknown) {
+            set({ error: getAxiosErrorMessage(err) });
             throw err;
         }
     },
@@ -137,8 +146,8 @@ export const useAppsStore = create<AppsState>((set, get) => ({
                 params: { type },
             });
             return response.data.stats;
-        } catch (err: any) {
-            set({ error: err.response?.data?.message || err.message });
+        } catch (err: unknown) {
+            set({ error: getAxiosErrorMessage(err) });
             throw err;
         }
     },
@@ -149,8 +158,8 @@ export const useAppsStore = create<AppsState>((set, get) => ({
                 params: { limit },
             });
             return response.data.activity;
-        } catch (err: any) {
-            set({ error: err.response?.data?.message || err.message });
+        } catch (err: unknown) {
+            set({ error: getAxiosErrorMessage(err) });
             throw err;
         }
     },

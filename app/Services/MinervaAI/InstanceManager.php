@@ -32,9 +32,9 @@ class InstanceManager
     {
         $setting = AISetting::getActive($userId);
 
-        if (!$setting) {
+        if (! $setting) {
             // Fallback to config
-            return new MinervaService();
+            return new MinervaService;
         }
 
         return new MinervaService([

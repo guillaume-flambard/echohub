@@ -20,12 +20,15 @@ export default function ForgotPassword({ status }: { status?: string }) {
             <Head title="Forgot password" />
 
             {status && (
-                <div className="rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-4 text-sm text-green-800 dark:text-green-200">
+                <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
                     {status}
                 </div>
             )}
 
-            <Form {...PasswordResetLinkController.store.form()} className="space-y-6">
+            <Form
+                {...PasswordResetLinkController.store.form()}
+                className="space-y-6"
+            >
                 {({ processing, errors }) => (
                     <>
                         <div className="space-y-2">
@@ -44,7 +47,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
                         <Button
                             type="submit"
-                            className="w-full h-11"
+                            className="h-11 w-full"
                             disabled={processing}
                             data-test="email-password-reset-link-button"
                         >

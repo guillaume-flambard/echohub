@@ -9,7 +9,11 @@ interface MessageInputProps {
     contact: Contact;
 }
 
-export function MessageInput({ onSend, disabled = false, contact }: MessageInputProps) {
+export function MessageInput({
+    onSend,
+    disabled = false,
+    contact,
+}: MessageInputProps) {
     const [message, setMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
 

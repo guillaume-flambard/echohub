@@ -16,7 +16,7 @@ class AISettingController extends Controller
         $setting = AISetting::getActive($request->user()->id);
 
         // If no setting exists, create default from env
-        if (!$setting) {
+        if (! $setting) {
             $setting = AISetting::create([
                 'user_id' => null, // Global setting
                 'provider' => config('minerva.provider'),
@@ -33,7 +33,7 @@ class AISettingController extends Controller
                 'provider' => $setting->provider,
                 'model' => $setting->model,
                 'base_url' => $setting->base_url,
-                'has_api_key' => !empty($setting->api_key),
+                'has_api_key' => ! empty($setting->api_key),
             ],
         ]);
     }
@@ -69,7 +69,7 @@ class AISettingController extends Controller
                 'provider' => $setting->provider,
                 'model' => $setting->model,
                 'base_url' => $setting->base_url,
-                'has_api_key' => !empty($setting->api_key),
+                'has_api_key' => ! empty($setting->api_key),
             ],
         ]);
     }
@@ -101,6 +101,7 @@ class AISettingController extends Controller
 
             if ($response->successful()) {
                 $models = $response->json('models', []);
+
                 return collect($models)->map(fn ($model) => [
                     'id' => $model['name'],
                     'name' => $model['name'],

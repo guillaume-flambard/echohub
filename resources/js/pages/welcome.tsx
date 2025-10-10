@@ -59,8 +59,9 @@ export default function Welcome() {
                                 <h1 className="text-lg font-medium">EchoHub</h1>
                             </div>
                             <p className="mb-6 text-[#706f6c] dark:text-[#A1A09A]">
-                                Manage all your applications through intelligent AI conversations
-                                with Minerva. Chat with your apps like you chat with colleagues.
+                                Manage all your applications through intelligent
+                                AI conversations with Minerva. Chat with your
+                                apps like you chat with colleagues.
                             </p>
 
                             <div className="mb-6 space-y-4">
@@ -82,7 +83,9 @@ export default function Welcome() {
                             </div>
 
                             <div className="border-t border-[#e3e3e0] pt-6 dark:border-[#3E3E3A]">
-                                <h2 className="mb-3 font-medium">Getting Started</h2>
+                                <h2 className="mb-3 font-medium">
+                                    Getting Started
+                                </h2>
                                 <ul className="space-y-3 text-[#706f6c] dark:text-[#A1A09A]">
                                     <li className="flex items-start gap-2">
                                         <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#f5300308] dark:bg-[#FF443308]">
@@ -97,7 +100,10 @@ export default function Welcome() {
                                             >
                                                 Ollama
                                             </a>{' '}
-                                            and pull a model: <code className="rounded bg-[#f5f5f4] px-1 py-0.5 text-[12px] dark:bg-[#1b1b1a]">ollama pull llama3.2:3b</code>
+                                            and pull a model:{' '}
+                                            <code className="rounded bg-[#f5f5f4] px-1 py-0.5 text-[12px] dark:bg-[#1b1b1a]">
+                                                ollama pull llama3.2:3b
+                                            </code>
                                         </span>
                                     </li>
                                     <li className="flex items-start gap-2">
@@ -106,7 +112,10 @@ export default function Welcome() {
                                         </span>
                                         <span>
                                             Run migrations and seed sample apps:{' '}
-                                            <code className="rounded bg-[#f5f5f4] px-1 py-0.5 text-[12px] dark:bg-[#1b1b1a]">php artisan migrate && php artisan db:seed</code>
+                                            <code className="rounded bg-[#f5f5f4] px-1 py-0.5 text-[12px] dark:bg-[#1b1b1a]">
+                                                php artisan migrate && php
+                                                artisan db:seed
+                                            </code>
                                         </span>
                                     </li>
                                     <li className="flex items-start gap-2">
@@ -123,7 +132,9 @@ export default function Welcome() {
                                                     Hub
                                                 </Link>
                                             ) : (
-                                                <span className="font-medium">Hub</span>
+                                                <span className="font-medium">
+                                                    Hub
+                                                </span>
                                             )}{' '}
                                             and start chatting with your apps
                                         </span>
@@ -139,7 +150,11 @@ export default function Welcome() {
                                         target="_blank"
                                         className="inline-flex items-center gap-1.5 rounded-md border border-[#e3e3e0] px-3 py-1.5 text-xs hover:border-[#19140035] dark:border-[#3E3E3A] dark:hover:border-[#62605b]"
                                     >
-                                        <svg className="h-3.5 w-3.5" viewBox="0 0 15 15" fill="none">
+                                        <svg
+                                            className="h-3.5 w-3.5"
+                                            viewBox="0 0 15 15"
+                                            fill="none"
+                                        >
                                             <path
                                                 d="M7.49933 0.25C3.49635 0.25 0.25 3.49593 0.25 7.50024C0.25 10.703 2.32715 13.4206 5.2081 14.3797C5.57084 14.446 5.70302 14.2222 5.70302 14.0299C5.70302 13.8576 5.69679 13.4019 5.69323 12.797C3.67661 13.235 3.25112 11.825 3.25112 11.825C2.92132 10.9874 2.44599 10.7644 2.44599 10.7644C1.78773 10.3149 2.49584 10.3238 2.49584 10.3238C3.22353 10.375 3.60629 11.0711 3.60629 11.0711C4.25298 12.1788 5.30335 11.8588 5.71638 11.6732C5.78225 11.205 5.96962 10.8854 6.17658 10.7043C4.56675 10.5209 2.87415 9.89918 2.87415 7.12104C2.87415 6.32925 3.15677 5.68257 3.62053 5.17563C3.54576 4.99226 3.29697 4.25521 3.69174 3.25691C3.69174 3.25691 4.30015 3.06196 5.68522 3.99973C6.26337 3.83906 6.8838 3.75895 7.50022 3.75583C8.1162 3.75895 8.73619 3.83906 9.31523 3.99973C10.6994 3.06196 11.3069 3.25691 11.3069 3.25691C11.7026 4.25521 11.4538 4.99226 11.3795 5.17563C11.8441 5.68257 12.1245 6.32925 12.1245 7.12104C12.1245 9.9063 10.4292 10.5192 8.81452 10.6985C9.07444 10.9224 9.30633 11.3648 9.30633 12.0413C9.30633 13.0102 9.29742 13.7922 9.29742 14.0299C9.29742 14.2239 9.42828 14.4496 9.79591 14.3788C12.6746 13.4179 14.75 10.7025 14.75 7.50024C14.75 3.49593 11.5036 0.25 7.49933 0.25Z"
                                                 fill="currentColor"
@@ -165,14 +180,16 @@ export default function Welcome() {
                             </div>
                         </div>
 
-                        <div className="relative flex flex-col justify-between rounded-tr-lg rounded-tl-lg bg-[#f53003] p-6 pb-12 lg:w-[370px] lg:rounded-bl-none lg:rounded-tr-lg lg:p-10 dark:bg-[#FF4433]">
+                        <div className="relative flex flex-col justify-between rounded-tl-lg rounded-tr-lg bg-[#f53003] p-6 pb-12 lg:w-[370px] lg:rounded-tr-lg lg:rounded-bl-none lg:p-10 dark:bg-[#FF4433]">
                             <div className="relative z-[1] flex flex-col">
                                 <div className="mb-8 lg:mb-12">
                                     <h2 className="mb-2 text-lg font-semibold text-white">
                                         Chat with Your Apps
                                     </h2>
                                     <p className="text-sm leading-relaxed text-white/90">
-                                        Minerva AI brings natural language interaction to your entire app ecosystem.
+                                        Minerva AI brings natural language
+                                        interaction to your entire app
+                                        ecosystem.
                                     </p>
                                 </div>
 
@@ -222,16 +239,28 @@ function FeatureItem({
                 {icon}
             </div>
             <div>
-                <h3 className="font-medium text-[#1b1b18] dark:text-[#EDEDEC]">{title}</h3>
-                <p className="mt-0.5 text-[#706f6c] dark:text-[#A1A09A]">{description}</p>
+                <h3 className="font-medium text-[#1b1b18] dark:text-[#EDEDEC]">
+                    {title}
+                </h3>
+                <p className="mt-0.5 text-[#706f6c] dark:text-[#A1A09A]">
+                    {description}
+                </p>
             </div>
         </div>
     );
 }
 
-function ExampleMessage({ type, message }: { type: 'user' | 'assistant'; message: string }) {
+function ExampleMessage({
+    type,
+    message,
+}: {
+    type: 'user' | 'assistant';
+    message: string;
+}) {
     return (
-        <div className={`flex ${type === 'user' ? 'justify-end' : 'justify-start'}`}>
+        <div
+            className={`flex ${type === 'user' ? 'justify-end' : 'justify-start'}`}
+        >
             <div
                 className={`max-w-[85%] rounded-lg px-3 py-2 text-xs leading-relaxed ${
                     type === 'user'

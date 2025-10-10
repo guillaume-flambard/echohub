@@ -56,21 +56,27 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
             });
 
             // Store credentials
-            localStorage.setItem('matrix_access_token', loginResponse.access_token);
+            localStorage.setItem(
+                'matrix_access_token',
+                loginResponse.access_token,
+            );
             localStorage.setItem('matrix_user_id', loginResponse.user_id);
 
             // Wait for initial sync to complete
             await new Promise<void>((resolve) => {
-                client.once(sdk.ClientEvent.Sync as any, (state: any) => {
-                    if (state === 'PREPARED') {
-                        resolve();
-                    }
-                });
+                client.once(
+                    sdk.ClientEvent.Sync,
+                    (state: string) => {
+                        if (state === 'PREPARED') {
+                            resolve();
+                        }
+                    },
+                );
                 client.startClient({ initialSyncLimit: 50 });
             });
 
             // Listen for new messages
-            client.on(sdk.RoomEvent.Timeline as any, (event: any, room: any) => {
+            client.on(sdk.RoomEvent.Timeline, (event: any) => {
                 if (event.getType() === 'm.room.message') {
                     // Trigger re-render when new messages arrive
                     set((state) => ({ ...state }));
@@ -85,8 +91,8 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
             });
 
             return true;
-        } catch (error: any) {
-            set({ error: error.message || 'Login failed' });
+        } catch (error: unknown) {
+            set({ error: 'Login failed' });
             console.error('Matrix login error:', error);
             return false;
         }
@@ -123,7 +129,10 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
 
         try {
             // Find or create room with this contact
-            const roomId = await findOrCreateDirectRoom(client, contactMatrixId);
+            const roomId = await findOrCreateDirectRoom(
+                client,
+                contactMatrixId,
+            );
 
             // Send message
             await client.sendTextMessage(roomId, message);
@@ -180,21 +189,27 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
 
                 // Wait for initial sync
                 await new Promise<void>((resolve) => {
-                    client.once(sdk.ClientEvent.Sync as any, (state: any) => {
-                        if (state === 'PREPARED') {
-                            resolve();
-                        }
-                    });
+                    client.once(
+                        sdk.ClientEvent.Sync,
+                        (state: string) => {
+                            if (state === 'PREPARED') {
+                                resolve();
+                            }
+                        },
+                    );
                     client.startClient({ initialSyncLimit: 50 });
                 });
 
                 // Listen for new messages
-                client.on(sdk.RoomEvent.Timeline as any, (event: any, room: any) => {
-                    if (event.getType() === 'm.room.message') {
-                        // Trigger re-render when new messages arrive
-                        set((state) => ({ ...state }));
-                    }
-                });
+                client.on(
+                    sdk.RoomEvent.Timeline,
+                    (event: any) => {
+                        if (event.getType() === 'm.room.message') {
+                            // Trigger re-render when new messages arrive
+                            set((state) => ({ ...state }));
+                        }
+                    },
+                );
 
                 set({
                     client,
@@ -213,7 +228,7 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
 // Helper function to find or create a direct message room
 async function findOrCreateDirectRoom(
     client: sdk.MatrixClient,
-    targetUserId: string
+    targetUserId: string,
 ): Promise<string> {
     // Check existing rooms
     const rooms = client.getRooms();
@@ -234,7 +249,7 @@ async function findOrCreateDirectRoom(
     const { room_id } = await client.createRoom({
         is_direct: true,
         invite: [targetUserId],
-        preset: 'trusted_private_chat',
+        preset: 'trusted_private_chat' as any,
     });
 
     return room_id;

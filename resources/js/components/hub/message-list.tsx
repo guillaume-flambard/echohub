@@ -1,13 +1,13 @@
+import { Button } from '@/components/ui/button';
 import type { Contact, Message } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { formatDistanceToNow } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
+import 'highlight.js/styles/github-dark.css';
 import { Bot, Check, Copy, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import { formatDistanceToNow } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import 'highlight.js/styles/github-dark.css';
+import remarkGfm from 'remark-gfm';
 
 interface MessageListProps {
     messages: Message[];
@@ -21,7 +21,12 @@ interface EmptyStateProps {
     onSuggestionClick?: (suggestion: string) => void;
 }
 
-export function MessageList({ messages, contact, sending = false, onSendMessage }: MessageListProps) {
+export function MessageList({
+    messages,
+    contact,
+    sending = false,
+    onSendMessage,
+}: MessageListProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -31,7 +36,10 @@ export function MessageList({ messages, contact, sending = false, onSendMessage 
     if (messages.length === 0) {
         return (
             <div className="flex flex-1 items-center justify-center p-4">
-                <EmptyState contact={contact} onSuggestionClick={onSendMessage} />
+                <EmptyState
+                    contact={contact}
+                    onSuggestionClick={onSendMessage}
+                />
             </div>
         );
     }
@@ -96,18 +104,15 @@ function TypingIndicator({ contact }: TypingIndicatorProps) {
 }
 
 function EmptyState({ contact, onSuggestionClick }: EmptyStateProps) {
-    const suggestions = contact.type === 'app' && contact.app
-        ? [
-            "What's the current status?",
-            "Show me recent activity",
-            "Give me a summary",
-            "What are the latest updates?",
-        ]
-        : [
-            "Hello!",
-            "How are you?",
-            "What's new?",
-        ];
+    const suggestions =
+        contact.type === 'app' && contact.app
+            ? [
+                  "What's the current status?",
+                  'Show me recent activity',
+                  'Give me a summary',
+                  'What are the latest updates?',
+              ]
+            : ['Hello!', 'How are you?', "What's new?"];
 
     return (
         <motion.div
@@ -126,9 +131,7 @@ function EmptyState({ contact, onSuggestionClick }: EmptyStateProps) {
                 </div>
             </div>
 
-            <h3 className="text-lg font-semibold">
-                Start a conversation
-            </h3>
+            <h3 className="text-lg font-semibold">Start a conversation</h3>
             <p className="mt-2 text-sm text-muted-foreground">
                 Ask {contact.name} anything or try one of these suggestions:
             </p>
@@ -196,22 +199,30 @@ function MessageBubble({ message, contact }: MessageBubbleProps) {
                     }`}
                 >
                     {isUser ? (
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {message.content}
+                        </p>
                     ) : (
                         <div className="prose prose-sm dark:prose-invert max-w-none">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeHighlight]}
                                 components={{
-                                    p: ({ children }) => <p className="mb-2 last:mb-0 text-sm leading-relaxed">{children}</p>,
+                                    p: ({ children }) => (
+                                        <p className="mb-2 text-sm leading-relaxed last:mb-0">
+                                            {children}
+                                        </p>
+                                    ),
                                     code: ({ className, children }) => {
                                         const isInline = !className;
                                         return isInline ? (
-                                            <code className="rounded bg-muted-foreground/10 px-1.5 py-0.5 text-xs font-mono">
+                                            <code className="rounded bg-muted-foreground/10 px-1.5 py-0.5 font-mono text-xs">
                                                 {children}
                                             </code>
                                         ) : (
-                                            <code className={className}>{children}</code>
+                                            <code className={className}>
+                                                {children}
+                                            </code>
                                         );
                                     },
                                     pre: ({ children }) => (
@@ -219,12 +230,34 @@ function MessageBubble({ message, contact }: MessageBubbleProps) {
                                             {children}
                                         </pre>
                                     ),
-                                    ul: ({ children }) => <ul className="my-2 list-disc pl-4 text-sm">{children}</ul>,
-                                    ol: ({ children }) => <ol className="my-2 list-decimal pl-4 text-sm">{children}</ol>,
-                                    li: ({ children }) => <li className="mb-1">{children}</li>,
-                                    h1: ({ children }) => <h1 className="mb-2 text-lg font-bold">{children}</h1>,
-                                    h2: ({ children }) => <h2 className="mb-2 text-base font-bold">{children}</h2>,
-                                    h3: ({ children }) => <h3 className="mb-1 text-sm font-bold">{children}</h3>,
+                                    ul: ({ children }) => (
+                                        <ul className="my-2 list-disc pl-4 text-sm">
+                                            {children}
+                                        </ul>
+                                    ),
+                                    ol: ({ children }) => (
+                                        <ol className="my-2 list-decimal pl-4 text-sm">
+                                            {children}
+                                        </ol>
+                                    ),
+                                    li: ({ children }) => (
+                                        <li className="mb-1">{children}</li>
+                                    ),
+                                    h1: ({ children }) => (
+                                        <h1 className="mb-2 text-lg font-bold">
+                                            {children}
+                                        </h1>
+                                    ),
+                                    h2: ({ children }) => (
+                                        <h2 className="mb-2 text-base font-bold">
+                                            {children}
+                                        </h2>
+                                    ),
+                                    h3: ({ children }) => (
+                                        <h3 className="mb-1 text-sm font-bold">
+                                            {children}
+                                        </h3>
+                                    ),
                                 }}
                             >
                                 {message.content}
@@ -238,7 +271,7 @@ function MessageBubble({ message, contact }: MessageBubbleProps) {
                             variant="ghost"
                             size="icon"
                             onClick={handleCopy}
-                            className="absolute -right-8 top-2 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                            className="absolute top-2 -right-8 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
                         >
                             {copied ? (
                                 <Check className="h-3 w-3 text-green-500" />
@@ -251,7 +284,9 @@ function MessageBubble({ message, contact }: MessageBubbleProps) {
 
                 {/* Timestamp */}
                 {relativeTime && (
-                    <p className={`px-2 text-xs ${isUser ? 'text-right text-muted-foreground' : 'text-left text-muted-foreground'}`}>
+                    <p
+                        className={`px-2 text-xs ${isUser ? 'text-right text-muted-foreground' : 'text-left text-muted-foreground'}`}
+                    >
                         {relativeTime}
                     </p>
                 )}

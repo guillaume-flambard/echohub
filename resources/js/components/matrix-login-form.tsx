@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useMatrixStore } from '@/stores/matrix';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useMatrixStore } from '@/stores/matrix';
+import { useState } from 'react';
 
 export default function MatrixLoginForm() {
     const [username, setUsername] = useState('');
@@ -57,8 +57,16 @@ export default function MatrixLoginForm() {
                                 Connected to Matrix
                             </h3>
                             <div className="mt-2 text-sm text-green-700 dark:text-green-300">
-                                <p>Logged in as: <span className="font-mono">{currentUserId}</span></p>
-                                <p className="mt-1">You can now chat with human contacts in the Hub.</p>
+                                <p>
+                                    Logged in as:{' '}
+                                    <span className="font-mono">
+                                        {currentUserId}
+                                    </span>
+                                </p>
+                                <p className="mt-1">
+                                    You can now chat with human contacts in the
+                                    Hub.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -88,7 +96,9 @@ export default function MatrixLoginForm() {
 
             {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
-                    <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                    <p className="text-sm text-red-800 dark:text-red-200">
+                        {error}
+                    </p>
                 </div>
             )}
 
@@ -123,10 +133,12 @@ export default function MatrixLoginForm() {
 
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Note:</strong> Use the Matrix user you created with the Synapse server.
-                    If you haven't created one yet, run:{' '}
+                    <strong>Note:</strong> Use the Matrix user you created with
+                    the Synapse server. If you haven't created one yet, run:{' '}
                     <code className="rounded bg-blue-100 px-1 py-0.5 dark:bg-blue-900">
-                        docker exec echohub_synapse register_new_matrix_user -u username -p password -a -c /data/homeserver.yaml http://localhost:8008
+                        docker exec echohub_synapse register_new_matrix_user -u
+                        username -p password -a -c /data/homeserver.yaml
+                        http://localhost:8008
                     </code>
                 </p>
             </div>

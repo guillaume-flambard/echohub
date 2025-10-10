@@ -25,7 +25,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             <Head title="Log in" />
 
             {status && (
-                <div className="rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-4 text-sm text-green-800 dark:text-green-200">
+                <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
                     {status}
                 </div>
             )}
@@ -86,7 +86,10 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     name="remember"
                                     tabIndex={3}
                                 />
-                                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+                                <Label
+                                    htmlFor="remember"
+                                    className="cursor-pointer text-sm font-normal"
+                                >
                                     Keep me logged in
                                 </Label>
                             </div>
@@ -94,7 +97,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                         <Button
                             type="submit"
-                            className="w-full h-11"
+                            className="h-11 w-full"
                             tabIndex={4}
                             disabled={processing}
                             data-test="login-button"
@@ -117,7 +120,11 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         </div>
 
                         <div className="text-center">
-                            <TextLink href={register()} tabIndex={5} className="text-sm">
+                            <TextLink
+                                href={register()}
+                                tabIndex={5}
+                                className="text-sm"
+                            >
                                 Create an account
                             </TextLink>
                         </div>

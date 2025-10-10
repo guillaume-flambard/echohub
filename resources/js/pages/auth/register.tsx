@@ -97,17 +97,19 @@ export default function Register() {
 
                         <Button
                             type="submit"
-                            className="w-full h-11"
+                            className="h-11 w-full"
                             tabIndex={5}
                             data-test="register-user-button"
                         >
                             {processing && (
                                 <LoaderCircle className="h-4 w-4 animate-spin" />
                             )}
-                            {processing ? 'Creating account...' : 'Create account'}
+                            {processing
+                                ? 'Creating account...'
+                                : 'Create account'}
                         </Button>
 
-                        <div className="text-xs text-center text-muted-foreground">
+                        <div className="text-center text-xs text-muted-foreground">
                             By creating an account, you agree to our{' '}
                             <TextLink href="#" className="hover:text-primary">
                                 Terms of Service
@@ -130,7 +132,11 @@ export default function Register() {
                         </div>
 
                         <div className="text-center">
-                            <TextLink href={login()} tabIndex={6} className="text-sm">
+                            <TextLink
+                                href={login()}
+                                tabIndex={6}
+                                className="text-sm"
+                            >
                                 Log in instead
                             </TextLink>
                         </div>

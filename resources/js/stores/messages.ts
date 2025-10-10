@@ -1,6 +1,6 @@
-import { create } from 'zustand';
 import axios from '@/bootstrap';
 import type { Contact, Message } from '@/types';
+import { create } from 'zustand';
 
 interface MessagesState {
     messages: Record<number, Message[]>; // contactId -> messages
@@ -25,14 +25,19 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
         }));
 
         try {
-            const response = await axios.get(`/api/contacts/${contact.id}/messages`);
+            const response = await axios.get(
+                `/api/contacts/${contact.id}/messages`,
+            );
             set((state) => ({
-                messages: { ...state.messages, [contact.id]: response.data.history || [] },
+                messages: {
+                    ...state.messages,
+                    [contact.id]: response.data.history || [],
+                },
                 loading: { ...state.loading, [contact.id]: false },
             }));
-        } catch (err: any) {
+        } catch {
             set((state) => ({
-                error: err.response?.data?.message || err.message || 'Failed to fetch messages',
+                error: 'Failed to fetch messages',
                 loading: { ...state.loading, [contact.id]: false },
             }));
         }
@@ -47,16 +52,23 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
         }));
 
         try {
-            const response = await axios.post(`/api/contacts/${contact.id}/messages`, {
-                message: content,
-            });
+            const response = await axios.post(
+                `/api/contacts/${contact.id}/messages`,
+                {
+                    message: content,
+                },
+            );
 
             if (response.data.success) {
                 const currentMessages = get().messages[contact.id] || [];
                 set((state) => ({
                     messages: {
                         ...state.messages,
-                        [contact.id]: [...currentMessages, response.data.message, response.data.response],
+                        [contact.id]: [
+                            ...currentMessages,
+                            response.data.message,
+                            response.data.response,
+                        ],
                     },
                     sending: { ...state.sending, [contact.id]: false },
                 }));
@@ -68,9 +80,9 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
                 }));
                 return false;
             }
-        } catch (err: any) {
+        } catch {
             set((state) => ({
-                error: err.response?.data?.error || err.message || 'Failed to send message',
+                error: 'Failed to send message',
                 sending: { ...state.sending, [contact.id]: false },
             }));
             return false;
@@ -84,9 +96,9 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
                 messages: { ...state.messages, [contact.id]: [] },
             }));
             return true;
-        } catch (err: any) {
+        } catch {
             set({
-                error: err.response?.data?.message || err.message || 'Failed to clear history',
+                error: 'Failed to clear history',
             });
             return false;
         }

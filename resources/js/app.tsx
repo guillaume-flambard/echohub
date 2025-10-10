@@ -4,9 +4,9 @@ import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import axios from './bootstrap';
 import { initializeTheme } from './hooks/use-appearance';
 import { useMatrixStore } from './stores/matrix';
-import axios from './bootstrap';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -36,6 +36,4 @@ function startApp() {
 }
 
 // Initialize CSRF cookie before starting the app
-axios.get('/sanctum/csrf-cookie')
-    .then(startApp)
-    .catch(startApp); // Start app even if CSRF endpoint fails
+axios.get('/sanctum/csrf-cookie').then(startApp).catch(startApp); // Start app even if CSRF endpoint fails

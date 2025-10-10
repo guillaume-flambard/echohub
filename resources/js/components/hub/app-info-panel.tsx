@@ -41,12 +41,18 @@ export function AppInfoPanel({ contact }: AppInfoPanelProps) {
                 {/* App Status Card */}
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">Status</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                            Status
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="flex items-center gap-2">
-                            <div className={`h-2 w-2 rounded-full ${statusColors[app.status]}`} />
-                            <span className="text-sm font-medium">{statusLabels[app.status]}</span>
+                            <div
+                                className={`h-2 w-2 rounded-full ${statusColors[app.status]}`}
+                            />
+                            <span className="text-sm font-medium">
+                                {statusLabels[app.status]}
+                            </span>
                         </div>
 
                         {app.last_ping && (
@@ -54,12 +60,15 @@ export function AppInfoPanel({ contact }: AppInfoPanelProps) {
                                 <Activity className="h-3 w-3" />
                                 <span>
                                     Last ping:{' '}
-                                    {new Date(app.last_ping).toLocaleString([], {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}
+                                    {new Date(app.last_ping).toLocaleString(
+                                        [],
+                                        {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        },
+                                    )}
                                 </span>
                             </div>
                         )}
@@ -69,7 +78,9 @@ export function AppInfoPanel({ contact }: AppInfoPanelProps) {
                 {/* App Details Card */}
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">Details</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                            Details
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="space-y-2">
@@ -97,7 +108,7 @@ export function AppInfoPanel({ contact }: AppInfoPanelProps) {
                                     <span className="font-medium">API Key</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <code className="flex-1 rounded bg-muted px-2 py-1 text-xs font-mono">
+                                    <code className="flex-1 rounded bg-muted px-2 py-1 font-mono text-xs">
                                         {app.api_key.substring(0, 20)}...
                                     </code>
                                 </div>
@@ -109,7 +120,9 @@ export function AppInfoPanel({ contact }: AppInfoPanelProps) {
                 {/* Quick Actions */}
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                            Quick Actions
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                         <Button
@@ -128,7 +141,11 @@ export function AppInfoPanel({ contact }: AppInfoPanelProps) {
                             </a>
                         </Button>
 
-                        <Button variant="outline" size="sm" className="w-full justify-start">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start"
+                        >
                             <Activity className="mr-2 h-4 w-4" />
                             View Logs
                         </Button>
@@ -139,16 +156,27 @@ export function AppInfoPanel({ contact }: AppInfoPanelProps) {
                 {app.metadata && Object.keys(app.metadata).length > 0 && (
                     <Card>
                         <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-medium">Metadata</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                Metadata
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                {Object.entries(app.metadata).map(([key, value]) => (
-                                    <div key={key} className="flex justify-between text-xs">
-                                        <span className="text-muted-foreground">{key}</span>
-                                        <span className="font-medium">{String(value)}</span>
-                                    </div>
-                                ))}
+                                {Object.entries(app.metadata).map(
+                                    ([key, value]) => (
+                                        <div
+                                            key={key}
+                                            className="flex justify-between text-xs"
+                                        >
+                                            <span className="text-muted-foreground">
+                                                {key}
+                                            </span>
+                                            <span className="font-medium">
+                                                {String(value)}
+                                            </span>
+                                        </div>
+                                    ),
+                                )}
                             </div>
                         </CardContent>
                     </Card>

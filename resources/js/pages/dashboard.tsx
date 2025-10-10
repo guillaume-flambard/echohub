@@ -1,13 +1,13 @@
+import { BookingTrendsChart } from '@/components/booking-trends-chart';
+import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard, hub } from '@/routes';
+import { useContactsStore } from '@/stores/contacts';
+import { useDashboardStore } from '@/stores/dashboard';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { useEffect } from 'react';
 import { Activity, Bot, MessageSquare, TrendingUp } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useDashboardStore } from '@/stores/dashboard';
-import { useContactsStore } from '@/stores/contacts';
-import { BookingTrendsChart } from '@/components/booking-trends-chart';
+import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -17,8 +17,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
-    const { stats, recentActivity, trends, loading: dashboardLoading, fetchAll } = useDashboardStore();
-    const { contacts, loading: contactsLoading, fetchContacts } = useContactsStore();
+    const {
+        stats,
+        recentActivity,
+        trends,
+        loading: dashboardLoading,
+        fetchAll,
+    } = useDashboardStore();
+    const {
+        contacts,
+        loading: contactsLoading,
+        fetchContacts,
+    } = useContactsStore();
 
     useEffect(() => {
         fetchAll();
@@ -76,17 +86,23 @@ export default function Dashboard() {
 
                 {/* 7-Day Booking Trends Chart */}
                 <div className="rounded-xl border border-sidebar-border bg-card p-6">
-                    <h2 className="mb-4 text-lg font-semibold">7-Day Booking Trends</h2>
+                    <h2 className="mb-4 text-lg font-semibold">
+                        7-Day Booking Trends
+                    </h2>
                     <BookingTrendsChart data={trends} loading={loading} />
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
                     {/* Your Apps */}
                     <div className="rounded-xl border border-sidebar-border bg-card p-6">
-                        <h2 className="mb-4 text-lg font-semibold">Your Apps</h2>
+                        <h2 className="mb-4 text-lg font-semibold">
+                            Your Apps
+                        </h2>
                         <div className="space-y-3">
                             {loading ? (
-                                <div className="text-sm text-muted-foreground">Loading...</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Loading...
+                                </div>
                             ) : contacts.length === 0 ? (
                                 <div className="text-sm text-muted-foreground">
                                     No apps configured yet.
@@ -103,7 +119,9 @@ export default function Dashboard() {
                                                 <Bot className="h-5 w-5 text-[#f53003] dark:text-[#FF4433]" />
                                             </div>
                                             <div>
-                                                <div className="font-medium">{contact.name}</div>
+                                                <div className="font-medium">
+                                                    {contact.name}
+                                                </div>
                                                 <div className="text-xs text-muted-foreground">
                                                     {contact.app?.domain}
                                                 </div>
@@ -126,13 +144,18 @@ export default function Dashboard() {
 
                     {/* Recent Activity */}
                     <div className="rounded-xl border border-sidebar-border bg-card p-6">
-                        <h2 className="mb-4 text-lg font-semibold">Recent Activity</h2>
+                        <h2 className="mb-4 text-lg font-semibold">
+                            Recent Activity
+                        </h2>
                         <div className="space-y-4">
                             {loading ? (
-                                <div className="text-sm text-muted-foreground">Loading...</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Loading...
+                                </div>
                             ) : recentActivity.length === 0 ? (
                                 <div className="text-sm text-muted-foreground">
-                                    No recent activity. Start chatting with your apps in the{' '}
+                                    No recent activity. Start chatting with your
+                                    apps in the{' '}
                                     <Link
                                         href={hub()}
                                         className="font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
@@ -142,27 +165,38 @@ export default function Dashboard() {
                                     .
                                 </div>
                             ) : (
-                                recentActivity.slice(0, 5).map((activity, idx) => (
-                                    <div key={idx} className="flex gap-3 text-sm">
-                                        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#f5300308] dark:bg-[#FF443308]">
-                                            <MessageSquare className="h-4 w-4 text-[#f53003] dark:text-[#FF4433]" />
-                                        </div>
-                                        <div className="flex-1 space-y-1">
-                                            <div className="flex items-center justify-between">
-                                                <span className="font-medium">
-                                                    {activity.contact.name}
-                                                </span>
-                                                <span className="text-xs text-muted-foreground">
-                                                    {formatTime(activity.message.timestamp)}
-                                                </span>
+                                recentActivity
+                                    .slice(0, 5)
+                                    .map((activity, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="flex gap-3 text-sm"
+                                        >
+                                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#f5300308] dark:bg-[#FF443308]">
+                                                <MessageSquare className="h-4 w-4 text-[#f53003] dark:text-[#FF4433]" />
                                             </div>
-                                            <p className="line-clamp-2 text-muted-foreground">
-                                                {activity.message.role === 'user' ? '→ ' : '← '}
-                                                {activity.message.content}
-                                            </p>
+                                            <div className="flex-1 space-y-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-medium">
+                                                        {activity.contact.name}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {formatTime(
+                                                            activity.message
+                                                                .timestamp,
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <p className="line-clamp-2 text-muted-foreground">
+                                                    {activity.message.role ===
+                                                    'user'
+                                                        ? '→ '
+                                                        : '← '}
+                                                    {activity.message.content}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
+                                    ))
                             )}
                         </div>
                     </div>
@@ -199,7 +233,9 @@ function StatCard({
                         <>
                             <p className="text-2xl font-semibold">{value}</p>
                             {subtitle && (
-                                <p className="text-xs text-muted-foreground">{subtitle}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {subtitle}
+                                </p>
                             )}
                         </>
                     )}

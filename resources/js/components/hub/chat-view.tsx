@@ -1,10 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { Contact, Message } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Menu, MoreVertical, Settings, Trash2, User } from 'lucide-react';
-import { MessageInput } from './message-input';
-import { MessageList } from './message-list';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,6 +6,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { Contact, Message } from '@/types';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Bot, Menu, MoreVertical, Settings, Trash2, User } from 'lucide-react';
+import { MessageInput } from './message-input';
+import { MessageList } from './message-list';
 
 interface ChatViewProps {
     contact: Contact | null;
@@ -99,7 +99,9 @@ export function ChatView({
                     <div>
                         <h2 className="font-semibold">{contact.name}</h2>
                         {contact.app && (
-                            <p className="text-sm text-muted-foreground">{contact.app.domain}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {contact.app.domain}
+                            </p>
                         )}
                     </div>
                 </div>
@@ -114,7 +116,9 @@ export function ChatView({
                         <DropdownMenuContent align="end">
                             {onOpenAISettings && (
                                 <>
-                                    <DropdownMenuItem onClick={onOpenAISettings}>
+                                    <DropdownMenuItem
+                                        onClick={onOpenAISettings}
+                                    >
                                         <Settings className="mr-2 size-4" />
                                         AI Settings
                                     </DropdownMenuItem>
@@ -147,7 +151,9 @@ export function ChatView({
                         {Array.from({ length: 4 }).map((_, i) => (
                             <div
                                 key={i}
-                                className={i % 2 === 0 ? 'flex justify-end' : ''}
+                                className={
+                                    i % 2 === 0 ? 'flex justify-end' : ''
+                                }
                             >
                                 <Skeleton className="h-16 w-3/4" />
                             </div>
@@ -163,8 +169,12 @@ export function ChatView({
                         className="flex flex-1 items-center justify-center p-4"
                     >
                         <div className="max-w-md rounded-2xl border border-destructive/50 bg-destructive/10 p-4 text-center">
-                            <p className="font-medium text-destructive">Error loading messages</p>
-                            <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+                            <p className="font-medium text-destructive">
+                                Error loading messages
+                            </p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {error}
+                            </p>
                         </div>
                     </motion.div>
                 ) : (
@@ -179,7 +189,11 @@ export function ChatView({
             </AnimatePresence>
 
             {/* Input */}
-            <MessageInput onSend={onSendMessage} disabled={sending} contact={contact} />
+            <MessageInput
+                onSend={onSendMessage}
+                disabled={sending}
+                contact={contact}
+            />
         </div>
     );
 }

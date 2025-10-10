@@ -1,6 +1,7 @@
-import { create } from 'zustand';
 import axios from '@/bootstrap';
+import { getAxiosErrorMessage } from '@/lib/error-utils';
 import type { Contact } from '@/types';
+import { create } from 'zustand';
 
 interface ContactsState {
     contacts: Contact[];
@@ -20,9 +21,9 @@ export const useContactsStore = create<ContactsState>((set) => ({
             const params = type ? { type } : {};
             const response = await axios.get('/api/contacts', { params });
             set({ contacts: response.data.contacts, loading: false });
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({
-                error: err.response?.data?.message || err.message || 'Failed to fetch contacts',
+                error: getAxiosErrorMessage(err) || 'Failed to fetch contacts',
                 loading: false,
             });
         }

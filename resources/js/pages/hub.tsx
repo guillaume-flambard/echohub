@@ -1,14 +1,14 @@
-import AppLayout from '@/layouts/app-layout';
 import { AISettingsModal } from '@/components/hub/ai-settings-modal';
 import { AppInfoPanel } from '@/components/hub/app-info-panel';
 import { ChatView } from '@/components/hub/chat-view';
 import { ContactList } from '@/components/hub/contact-list';
+import AppLayout from '@/layouts/app-layout';
+import { hub } from '@/routes';
 import { useContactsStore } from '@/stores/contacts';
 import { useMessagesStore } from '@/stores/messages';
 import { type BreadcrumbItem, type Contact } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { hub } from '@/routes';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -18,13 +18,28 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Hub() {
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(
+        null,
+    );
     const [isMobileContactsOpen, setIsMobileContactsOpen] = useState(false);
     const [isAISettingsOpen, setIsAISettingsOpen] = useState(false);
 
     // Zustand stores
-    const { contacts, loading: contactsLoading, error: contactsError, fetchContacts } = useContactsStore();
-    const { messages, loading, sending, error: messagesError, fetchHistory, sendMessage, clearHistory } = useMessagesStore();
+    const {
+        contacts,
+        loading: contactsLoading,
+        error: contactsError,
+        fetchContacts,
+    } = useContactsStore();
+    const {
+        messages,
+        loading,
+        sending,
+        error: messagesError,
+        fetchHistory,
+        sendMessage,
+        clearHistory,
+    } = useMessagesStore();
 
     // Fetch contacts on mount
     useEffect(() => {
@@ -34,9 +49,13 @@ export default function Hub() {
     // Restore selected contact from localStorage after contacts are loaded
     useEffect(() => {
         if (contacts.length > 0 && !selectedContact) {
-            const savedContactId = localStorage.getItem('hub_selected_contact_id');
+            const savedContactId = localStorage.getItem(
+                'hub_selected_contact_id',
+            );
             if (savedContactId) {
-                const contact = contacts.find(c => c.id === parseInt(savedContactId));
+                const contact = contacts.find(
+                    (c) => c.id === parseInt(savedContactId),
+                );
                 if (contact) {
                     setSelectedContact(contact);
                     // If restoring a contact on mobile, close the contacts panel
@@ -55,9 +74,15 @@ export default function Hub() {
         }
     }, [selectedContact, fetchHistory]);
 
-    const currentMessages = selectedContact ? messages[selectedContact.id] || [] : [];
-    const messagesLoading = selectedContact ? loading[selectedContact.id] || false : false;
-    const isSending = selectedContact ? sending[selectedContact.id] || false : false;
+    const currentMessages = selectedContact
+        ? messages[selectedContact.id] || []
+        : [];
+    const messagesLoading = selectedContact
+        ? loading[selectedContact.id] || false
+        : false;
+    const isSending = selectedContact
+        ? sending[selectedContact.id] || false
+        : false;
 
     const handleSelectContact = (contact: Contact) => {
         setSelectedContact(contact);
@@ -75,7 +100,7 @@ export default function Hub() {
         if (!selectedContact) return false;
 
         const confirmed = window.confirm(
-            'Are you sure you want to clear the conversation history? This action cannot be undone.'
+            'Are you sure you want to clear the conversation history? This action cannot be undone.',
         );
 
         if (confirmed) {
@@ -91,21 +116,15 @@ export default function Hub() {
             <div className="relative flex h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                 {/* Contact List Sidebar */}
                 <div
-                    className={`
-                        w-full md:w-80 h-full
-                        border-r border-sidebar-border bg-card
-                        transition-transform duration-200 ease-in-out
-                        ${
-                            // Desktop: always visible (static)
-                            'md:relative md:translate-x-0'
-                        }
-                        ${
-                            // Mobile: conditional visibility
-                            selectedContact
-                                ? `absolute z-10 ${isMobileContactsOpen ? 'translate-x-0' : '-translate-x-full'}`
-                                : 'relative translate-x-0'
-                        }
-                    `}
+                    className={`h-full w-full border-r border-sidebar-border bg-card transition-transform duration-200 ease-in-out md:w-80 ${
+                        // Desktop: always visible (static)
+                        'md:relative md:translate-x-0'
+                    } ${
+                        // Mobile: conditional visibility
+                        selectedContact
+                            ? `absolute z-10 ${isMobileContactsOpen ? 'translate-x-0' : '-translate-x-full'}`
+                            : 'relative translate-x-0'
+                    } `}
                 >
                     <ContactList
                         contacts={contacts}
@@ -115,12 +134,16 @@ export default function Hub() {
                         error={contactsError}
                         showMobileToggle={!!selectedContact}
                         isMobileOpen={isMobileContactsOpen}
-                        onMobileToggle={() => setIsMobileContactsOpen(!isMobileContactsOpen)}
+                        onMobileToggle={() =>
+                            setIsMobileContactsOpen(!isMobileContactsOpen)
+                        }
                     />
                 </div>
 
                 {/* Chat View - Hidden on mobile when no contact selected */}
-                <div className={`flex flex-1 bg-background ${!selectedContact ? 'hidden md:flex' : ''}`}>
+                <div
+                    className={`flex flex-1 bg-background ${!selectedContact ? 'hidden md:flex' : ''}`}
+                >
                     <div className="flex-1">
                         <ChatView
                             contact={selectedContact}
@@ -130,14 +153,20 @@ export default function Hub() {
                             error={messagesError}
                             onSendMessage={handleSendMessage}
                             onClearHistory={handleClearHistory}
-                            showMobileMenuButton={!!selectedContact && !isMobileContactsOpen}
-                            onMobileMenuClick={() => setIsMobileContactsOpen(true)}
+                            showMobileMenuButton={
+                                !!selectedContact && !isMobileContactsOpen
+                            }
+                            onMobileMenuClick={() =>
+                                setIsMobileContactsOpen(true)
+                            }
                             onOpenAISettings={() => setIsAISettingsOpen(true)}
                         />
                     </div>
 
                     {/* App Info Panel - Only show for app contacts on large screens */}
-                    {selectedContact && <AppInfoPanel contact={selectedContact} />}
+                    {selectedContact && (
+                        <AppInfoPanel contact={selectedContact} />
+                    )}
                 </div>
             </div>
 

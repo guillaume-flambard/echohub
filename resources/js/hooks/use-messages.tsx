@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
 import axios from '@/bootstrap';
-import type { Contact, Message, MinervaResponse } from '@/types';
+import { getAxiosErrorMessage } from '@/lib/error-utils';
 import { useMatrixStore } from '@/stores/matrix';
+import type { Contact, Message, MinervaResponse } from '@/types';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useMessages(contact: Contact | null) {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -11,7 +12,7 @@ export function useMessages(contact: Contact | null) {
 
     const matrixStore = useMatrixStore();
 
-    const fetchHistory = async () => {
+    const fetchHistory = useCallback(async () => {
         if (!contact) return;
 
         setLoading(true);
@@ -20,25 +21,36 @@ export function useMessages(contact: Contact | null) {
         try {
             // For human contacts, use Matrix
             if (contact.type === 'human') {
-                const matrixMessages = matrixStore.getMessages(contact.matrix_id);
-                const formattedMessages: Message[] = matrixMessages.map((msg) => ({
-                    role: msg.sender === matrixStore.currentUserId ? 'user' : 'assistant',
-                    content: msg.content,
-                    timestamp: new Date(msg.timestamp).toISOString(),
-                }));
+                const matrixMessages = matrixStore.getMessages(
+                    contact.matrix_id,
+                );
+                const formattedMessages: Message[] = matrixMessages.map(
+                    (msg) => ({
+                        role:
+                            msg.sender === matrixStore.currentUserId
+                                ? 'user'
+                                : 'assistant',
+                        content: msg.content,
+                        timestamp: new Date(msg.timestamp).toISOString(),
+                    }),
+                );
                 setMessages(formattedMessages);
             } else {
                 // For app contacts, use API
-                const response = await axios.get(`/api/contacts/${contact.id}/messages`);
+                const response = await axios.get(
+                    `/api/contacts/${contact.id}/messages`,
+                );
                 setMessages(response.data.history || []);
             }
-        } catch (err: any) {
-            setError(err.message || 'Failed to fetch message history');
+        } catch (err: unknown) {
+            setError(
+                getAxiosErrorMessage(err) || 'Failed to fetch message history',
+            );
             console.error('Error fetching messages:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [contact, matrixStore]);
 
     const sendMessage = async (content: string): Promise<boolean> => {
         if (!contact || !content.trim()) return false;
@@ -63,7 +75,7 @@ export function useMessages(contact: Contact | null) {
                 // For app contacts, use API
                 const response = await axios.post<MinervaResponse>(
                     `/api/contacts/${contact.id}/messages`,
-                    { message: content }
+                    { message: content },
                 );
 
                 if (response.data.success) {
@@ -79,8 +91,8 @@ export function useMessages(contact: Contact | null) {
                     return false;
                 }
             }
-        } catch (err: any) {
-            setError(err.response?.data?.error || err.message || 'Failed to send message');
+        } catch (err: unknown) {
+            setError(getAxiosErrorMessage(err) || 'Failed to send message');
             console.error('Error sending message:', err);
             return false;
         } finally {
@@ -95,8 +107,8 @@ export function useMessages(contact: Contact | null) {
             await axios.delete(`/api/contacts/${contact.id}/messages`);
             setMessages([]);
             return true;
-        } catch (err: any) {
-            setError(err.message || 'Failed to clear history');
+        } catch (err: unknown) {
+            setError(getAxiosErrorMessage(err) || 'Failed to clear history');
             console.error('Error clearing history:', err);
             return false;
         }
@@ -108,7 +120,7 @@ export function useMessages(contact: Contact | null) {
         } else {
             setMessages([]);
         }
-    }, [contact?.id]);
+    }, [contact, fetchHistory]);
 
     return {
         messages,

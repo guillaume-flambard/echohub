@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Contact } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Bot, Circle, Search, User, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -25,14 +25,18 @@ export function ContactList({
     loading = false,
     error = null,
     showMobileToggle = false,
-    isMobileOpen: _isMobileOpen = false,
+    isMobileOpen = false,
     onMobileToggle,
 }: ContactListProps) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [filterType, setFilterType] = useState<'all' | 'app' | 'human'>('all');
+    const [filterType, setFilterType] = useState<'all' | 'app' | 'human'>(
+        'all',
+    );
 
     const filteredContacts = contacts.filter((contact) => {
-        const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = contact.name
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
         const matchesType = filterType === 'all' || contact.type === filterType;
         return matchesSearch && matchesType;
     });
@@ -60,8 +64,12 @@ export function ContactList({
         return (
             <div className="flex h-full items-center justify-center p-4">
                 <div className="max-w-sm rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-                    <p className="font-medium text-destructive">Error loading contacts</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+                    <p className="font-medium text-destructive">
+                        Error loading contacts
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        {error}
+                    </p>
                 </div>
             </div>
         );
@@ -86,7 +94,7 @@ export function ContactList({
                 )}
 
                 <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         placeholder="Search contacts..."
                         value={searchQuery}
@@ -148,7 +156,7 @@ export function ContactList({
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.1 }}
                                 >
-                                    <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    <div className="mb-1.5 px-2 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                                         Apps
                                     </div>
                                     {appContacts.map((contact, index) => (
@@ -161,8 +169,13 @@ export function ContactList({
                                         >
                                             <ContactItem
                                                 contact={contact}
-                                                isSelected={selectedContact?.id === contact.id}
-                                                onClick={() => onSelectContact(contact)}
+                                                isSelected={
+                                                    selectedContact?.id ===
+                                                    contact.id
+                                                }
+                                                onClick={() =>
+                                                    onSelectContact(contact)
+                                                }
                                             />
                                         </motion.div>
                                     ))}
@@ -174,9 +187,12 @@ export function ContactList({
                                     className="px-2 pt-2 pb-1"
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: appContacts.length > 0 ? 0.2 : 0.1 }}
+                                    transition={{
+                                        delay:
+                                            appContacts.length > 0 ? 0.2 : 0.1,
+                                    }}
                                 >
-                                    <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    <div className="mb-1.5 px-2 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                                         Humans
                                     </div>
                                     {humanContacts.map((contact, index) => (
@@ -189,8 +205,13 @@ export function ContactList({
                                         >
                                             <ContactItem
                                                 contact={contact}
-                                                isSelected={selectedContact?.id === contact.id}
-                                                onClick={() => onSelectContact(contact)}
+                                                isSelected={
+                                                    selectedContact?.id ===
+                                                    contact.id
+                                                }
+                                                onClick={() =>
+                                                    onSelectContact(contact)
+                                                }
                                             />
                                         </motion.div>
                                     ))}
@@ -251,7 +272,7 @@ function ContactItem({ contact, isSelected, onClick }: ContactItemProps) {
                         }}
                     >
                         <Circle
-                            className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-background ${statusColor}`}
+                            className={`absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full border-2 border-background ${statusColor}`}
                             fill="currentColor"
                         />
                     </motion.div>
@@ -259,9 +280,14 @@ function ContactItem({ contact, isSelected, onClick }: ContactItemProps) {
             </motion.div>
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                    <p className="truncate text-sm font-medium">{contact.name}</p>
+                    <p className="truncate text-sm font-medium">
+                        {contact.name}
+                    </p>
                     {contact.type === 'app' && (
-                        <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+                        <Badge
+                            variant="secondary"
+                            className="h-4 px-1.5 text-[10px]"
+                        >
                             Minerva
                         </Badge>
                     )}
