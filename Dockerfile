@@ -27,7 +27,7 @@ ENV SKIP_WAYFINDER=1
 RUN pnpm run build
 
   # Stage 2: Final production image
-FROM php:8.2-cli-alpine
+FROM php:8.3-cli-alpine
 
 WORKDIR /var/www/html
 
