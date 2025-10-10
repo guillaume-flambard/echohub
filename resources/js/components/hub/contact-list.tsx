@@ -14,7 +14,6 @@ interface ContactListProps {
     loading?: boolean;
     error?: string | null;
     showMobileToggle?: boolean;
-    isMobileOpen?: boolean;
     onMobileToggle?: () => void;
 }
 
@@ -25,7 +24,6 @@ export function ContactList({
     loading = false,
     error = null,
     showMobileToggle = false,
-    isMobileOpen: _isMobileOpen = false,
     onMobileToggle,
 }: ContactListProps) {
     const [searchQuery, setSearchQuery] = useState('');
