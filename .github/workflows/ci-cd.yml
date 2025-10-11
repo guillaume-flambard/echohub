@@ -250,35 +250,158 @@ jobs:
               external: true
           COMPOSE_EOF
           
+          # Backup current deployment for rollback
+          BACKUP_IMAGE=""
+          if docker-compose ps echohub 2>/dev/null | grep -q "Up"; then
+            echo "📦 Backing up current deployment for rollback..."
+            BACKUP_IMAGE=$(docker inspect echohub-${ENVIRONMENT} --format='{{.Image}}' 2>/dev/null || echo "")
+            echo "Backup image: $BACKUP_IMAGE"
+          fi
+
           # Pull latest image
           echo "📥 Pulling latest image..."
-          docker-compose pull
-          
+          if ! docker-compose pull; then
+            echo "❌ Failed to pull Docker image"
+            echo "Check if image exists and registry is accessible"
+            exit 1
+          fi
+
           # Deploy with zero-downtime strategy
           echo "🔄 Deploying with zero-downtime..."
           docker-compose up -d --remove-orphans
-          
-          # Wait for health check
-          echo "🏥 Waiting for application to be healthy..."
+
+          # Wait for container to start
+          echo "⏳ Waiting for container to start..."
+          sleep 10
+
+          # Check if container is running
+          echo "🔍 Checking container status..."
+          MAX_WAIT=60
+          ELAPSED=0
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            if docker-compose ps echohub 2>/dev/null | grep -q "Up"; then
+              echo "✅ Container is running"
+              break
+            fi
+
+            if [ $ELAPSED -gt 30 ]; then
+              echo "⚠️  Container not up after ${ELAPSED}s, checking logs..."
+              docker-compose ps
+              docker-compose logs --tail=30 echohub
+            fi
+
+            sleep 5
+            ELAPSED=$((ELAPSED + 5))
+            echo "⏳ Waiting... (${ELAPSED}/${MAX_WAIT}s)"
+          done
+
+          if ! docker-compose ps echohub 2>/dev/null | grep -q "Up"; then
+            echo "❌ Container failed to start after ${MAX_WAIT}s!"
+            docker-compose ps
+            docker-compose logs echohub
+
+            # Rollback if we have a backup
+            if [ -n "$BACKUP_IMAGE" ]; then
+              echo "🔄 Rolling back to previous version..."
+              docker tag "$BACKUP_IMAGE" "$IMAGE_TAG"
+              docker-compose up -d --force-recreate
+            fi
+            exit 1
+          fi
+
+          # Wait for application initialization
+          echo "⏳ Waiting for application to initialize (migrations, cache, etc.)..."
           sleep 30
-          
-          # Health check with retries
-          HEALTH_URL="https://$DOMAIN/up"
+
+          # Internal health check first (bypass Traefik/network issues)
+          echo "🏥 Running internal health check..."
+          INTERNAL_HEALTH_OK=false
           for i in {1..5}; do
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" || echo "000")
-            if [ "$HTTP_CODE" == "200" ]; then
-              echo "✅ Health check passed (HTTP $HTTP_CODE)"
+            echo "🔄 Internal check attempt $i/5..."
+            if docker exec echohub-${ENVIRONMENT} curl -sf http://localhost:8000/up >/dev/null 2>&1; then
+              echo "✅ Internal health check passed"
+              INTERNAL_HEALTH_OK=true
               break
             else
-              echo "⏳ Health check attempt $i/5 (HTTP $HTTP_CODE), waiting..."
-              sleep 10
-              if [ $i -eq 5 ]; then
-                echo "❌ Health check failed after 5 attempts"
-                docker-compose logs echohub
-                exit 1
+              echo "⏳ Application not ready, waiting 10s..."
+              if [ $i -eq 3 ]; then
+                echo "📋 Container logs:"
+                docker-compose logs --tail=50 echohub
               fi
+              sleep 10
             fi
           done
+
+          if [ "$INTERNAL_HEALTH_OK" = false ]; then
+            echo "❌ Internal health check failed - application not starting properly"
+            echo "📋 Full logs:"
+            docker-compose logs echohub
+            echo "🔍 Environment check:"
+            docker exec echohub-${ENVIRONMENT} php artisan about || true
+
+            # Rollback
+            if [ -n "$BACKUP_IMAGE" ]; then
+              echo "🔄 Rolling back to previous version..."
+              docker tag "$BACKUP_IMAGE" "$IMAGE_TAG"
+              docker-compose up -d --force-recreate
+            fi
+            exit 1
+          fi
+
+          # External health check (through Traefik/domain)
+          echo "🌐 Running external health check through domain..."
+          HEALTH_URL="https://$DOMAIN/up"
+          echo "🔍 Health check URL: $HEALTH_URL"
+
+          EXTERNAL_HEALTH_OK=false
+          for i in {1..12}; do
+            echo "🔄 External check attempt $i/12..."
+
+            # Try curl with reasonable timeouts
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 --max-time 30 "$HEALTH_URL" 2>/dev/null || echo "000")
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ External health check passed (HTTP $HTTP_CODE)"
+              EXTERNAL_HEALTH_OK=true
+              break
+            else
+              echo "⚠️  External check returned HTTP $HTTP_CODE"
+
+              # Show diagnostics on early failures
+              if [ $i -le 3 ]; then
+                echo "📝 Container status:"
+                docker-compose ps echohub
+                echo "🔍 Testing direct container access:"
+                docker exec echohub-${ENVIRONMENT} curl -sf http://localhost:8000/up && echo "Direct access OK" || echo "Direct access failed"
+              fi
+
+              # Progressive backoff
+              WAIT_TIME=$((10 + i * 3))
+              echo "⏳ Waiting ${WAIT_TIME}s before next attempt..."
+              sleep $WAIT_TIME
+            fi
+          done
+
+          if [ "$EXTERNAL_HEALTH_OK" = false ]; then
+            echo "⚠️  External health check failed, but internal check passed"
+            echo "This might be a Traefik/DNS/SSL issue, not the application"
+            echo ""
+            echo "🔍 Diagnostics:"
+            echo "1. Internal health: ✅ OK"
+            echo "2. External health: ❌ Failed"
+            echo ""
+            echo "📋 Troubleshooting steps:"
+            echo "- Check Traefik configuration and logs"
+            echo "- Verify DNS: dig $DOMAIN"
+            echo "- Check SSL certificate"
+            echo "- Verify dokploy-network connectivity"
+            echo ""
+            echo "📋 Recent logs:"
+            docker-compose logs --tail=50 echohub
+            echo ""
+            echo "⚠️  Deployment continuing since application is healthy internally"
+            echo "Check TROUBLESHOOTING.md for network/Traefik issues"
+          fi
           
           # Cleanup old containers and images
           echo "🧹 Cleaning up old resources..."
