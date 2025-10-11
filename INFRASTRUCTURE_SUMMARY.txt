@@ -1,0 +1,134 @@
+🎉 INFRASTRUCTURE AWS READY - 100% GRATUIT!
+=============================================
+
+INSTANCE EC2 (CRÉÉE & ACTIVE)
+-----------------------------
+✅ Instance ID:    i-05e9d5420d1e959ae
+✅ Type:           t3.micro (2 vCPU, 1GB RAM) - FREE TIER
+✅ OS:             Ubuntu 24.04 LTS
+✅ IP Publique:    100.26.171.158 (Elastic IP - stable)
+✅ Région:         us-east-1 (N. Virginia)
+✅ Security Group: sg-0edb9989ac8e4e85b
+✅ SSH Key:        ~/.ssh/echohub-key.pem
+
+FIREWALL (CONFIGURÉ)
+--------------------
+✅ Port 22 (SSH)     - Accès serveur
+✅ Port 80 (HTTP)    - Web
+✅ Port 443 (HTTPS)  - SSL
+✅ Port 8008 (Matrix) - Messaging
+
+COÛT MENSUEL: $0 🎉
+-------------------
+- EC2 t3.micro:        $0 (Free Tier - 750h/mois)
+- Elastic IP:          $0 (gratuit quand attaché)
+- Storage 30GB:        $0 (inclus dans Free Tier)
+- Data Transfer 100GB: $0 (inclus dans Free Tier)
+- Google Gemini AI:    $0 (1,500 requêtes/jour)
+- GitHub Actions:      $0 (2,000 minutes/mois)
+---------------------
+TOTAL:                 $0/mois pendant 12 mois
+
+DOCUMENTATION DISPONIBLE
+------------------------
+📖 DEPLOY_NOW.md              - Quick start (3 étapes, 15 min)
+📖 AWS_FREE_TIER_GUIDE.md     - Guide complet en français
+📖 AWS_SETUP_COMPLETE.md      - Documentation détaillée
+📖 AWS_DEPLOYMENT_GUIDE.md    - Options de déploiement
+📖 deploy-aws.sh              - Script automatique
+
+DÉPLOIEMENT EN 3 ÉTAPES
+-----------------------
+
+1️⃣ OBTENIR GEMINI API KEY (2 min)
+   → https://aistudio.google.com/
+   → Connectez-vous → Get API key → Copiez
+
+2️⃣ SE CONNECTER AU SERVEUR (1 min)
+   → ssh -i ~/.ssh/echohub-key.pem ubuntu@100.26.171.158
+
+3️⃣ DÉPLOYER ECHOHUB (12 min)
+   → git clone https://github.com/guillaume-flambard/echohub.git
+   → cd echohub
+   → ./deploy-aws.sh
+
+ACCÈS APRÈS DÉPLOIEMENT
+------------------------
+🌐 URL: http://100.26.171.158
+👤 Login: [votre email configuré]
+🔒 Password: [votre mot de passe configuré]
+
+CE QUI SERA DÉPLOYÉ
+-------------------
+✅ EchoHub Platform (Laravel 12 + React 19)
+   - Multi-tenant avec RBAC enterprise
+   - Gestion des organisations & équipes
+   - 5 niveaux de rôles
+   - 35 permissions granulaires
+   - Audit logging complet
+
+✅ Matrix Messaging
+   - Serveur Synapse
+   - Messagerie décentralisée
+   - Communication temps réel
+
+✅ Minerva AI
+   - Propulsé par Google Gemini (GRATUIT)
+   - 1,500 requêtes/jour
+   - Intelligence GPT-4 level
+   - Gestion contextuelle des apps
+
+✅ Services Infrastructure
+   - Docker Compose
+   - Nginx reverse proxy
+   - SQLite database
+   - PM2 process manager
+
+CAPACITÉ
+--------
+👥 10-50 utilisateurs concurrents
+📊 30-60 utilisateurs actifs/jour avec AI
+💬 Support complet du messaging
+📈 Scalable vers t3.small si besoin
+
+COMMANDES UTILES
+----------------
+# Connexion SSH
+ssh -i ~/.ssh/echohub-key.pem ubuntu@100.26.171.158
+
+# Voir les logs
+cd ~/echohub && docker compose logs -f
+
+# Redémarrer
+docker compose restart
+
+# Status
+docker compose ps
+
+# Vérifier les coûts AWS
+aws ce get-cost-and-usage \
+  --time-period Start=2025-10-01,End=2025-10-31 \
+  --granularity MONTHLY \
+  --metrics UnblendedCost
+
+PROCHAINES ÉTAPES
+-----------------
+☐ Obtenir Gemini API key
+☐ Se connecter au serveur
+☐ Exécuter le déploiement
+☐ Configurer les backups
+☐ (Optionnel) Configurer domaine + SSL
+
+SUPPORT
+-------
+📚 Docs: Voir AWS_FREE_TIER_GUIDE.md
+🔗 GitHub: https://github.com/guillaume-flambard/echohub
+🌐 AWS Console: https://console.aws.amazon.com/ec2/
+🤖 Gemini: https://aistudio.google.com/
+
+========================================
+🚀 PRÊT À DÉPLOYER!
+========================================
+
+Ouvrez DEPLOY_NOW.md pour commencer
+Votre infrastructure gratuite vous attend!

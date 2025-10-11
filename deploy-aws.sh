@@ -57,18 +57,46 @@ echo -e "${YELLOW}⚙️  Configuring environment...${NC}"
 if [ ! -f ".env" ]; then
     cp .env.example .env
     echo -e "${GREEN}✓ Created .env file${NC}"
-    echo -e "${YELLOW}⚠️  IMPORTANT: You need to edit .env with your Google Gemini API key!${NC}"
+    echo -e "${YELLOW}⚠️  IMPORTANT: You need to edit .env with your AI API key!${NC}"
     echo ""
-    echo "1. Get your free API key from: https://aistudio.google.com/"
-    echo "2. Edit .env file:"
-    echo "   nano .env"
+    echo "Which AI provider do you want to use?"
+    echo "1. Groq (Fast & Free - Recommended)"
+    echo "2. Google Gemini (Free)"
+    echo "3. OpenAI (Paid)"
     echo ""
-    echo "Update these lines:"
-    echo "   MINERVA_AI_PROVIDER=google"
-    echo "   MINERVA_AI_API_KEY=your_gemini_api_key_here"
-    echo "   MINERVA_AI_MODEL=gemini-2.0-flash-exp"
-    echo ""
-    read -p "Press Enter after you've updated the .env file..."
+    read -p "Enter choice (1-3) [default: 1]: " AI_CHOICE
+    AI_CHOICE=${AI_CHOICE:-1}
+
+    if [ "$AI_CHOICE" = "1" ]; then
+        echo ""
+        echo "Using Groq AI (llama-3.3-70b-versatile)"
+        echo "Get your free API key from: https://console.groq.com/keys"
+        echo ""
+        read -p "Enter your Groq API key: " GROQ_KEY
+        sed -i.bak "s/MINERVA_AI_PROVIDER=.*/MINERVA_AI_PROVIDER=groq/" .env
+        sed -i.bak "s/MINERVA_AI_API_KEY=.*/MINERVA_AI_API_KEY=$GROQ_KEY/" .env
+        sed -i.bak "s/MINERVA_AI_MODEL=.*/MINERVA_AI_MODEL=llama-3.3-70b-versatile/" .env
+        sed -i.bak "s|MINERVA_AI_BASE_URL=.*|MINERVA_AI_BASE_URL=https://api.groq.com/openai/v1|" .env
+    elif [ "$AI_CHOICE" = "2" ]; then
+        echo ""
+        echo "Using Google Gemini"
+        echo "Get your free API key from: https://aistudio.google.com/"
+        echo ""
+        read -p "Enter your Gemini API key: " GEMINI_KEY
+        sed -i.bak "s/MINERVA_AI_PROVIDER=.*/MINERVA_AI_PROVIDER=google/" .env
+        sed -i.bak "s/MINERVA_AI_API_KEY=.*/MINERVA_AI_API_KEY=$GEMINI_KEY/" .env
+        sed -i.bak "s/MINERVA_AI_MODEL=.*/MINERVA_AI_MODEL=gemini-2.0-flash-exp/" .env
+    else
+        echo ""
+        echo "Using OpenAI"
+        read -p "Enter your OpenAI API key: " OPENAI_KEY
+        sed -i.bak "s/MINERVA_AI_PROVIDER=.*/MINERVA_AI_PROVIDER=openai/" .env
+        sed -i.bak "s/MINERVA_AI_API_KEY=.*/MINERVA_AI_API_KEY=$OPENAI_KEY/" .env
+        sed -i.bak "s/MINERVA_AI_MODEL=.*/MINERVA_AI_MODEL=gpt-4/" .env
+        sed -i.bak "s|MINERVA_AI_BASE_URL=.*|MINERVA_AI_BASE_URL=https://api.openai.com/v1|" .env
+    fi
+    rm -f .env.bak
+    echo -e "${GREEN}✓ AI configuration complete${NC}"
 else
     echo -e "${GREEN}✓ .env file already exists${NC}"
 fi
