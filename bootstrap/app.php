@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Middleware\CheckPermission;
+use App\Http\Middleware\EnsureOrganizationActive;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetCurrentOrganization;
 use App\Http\Middleware\ValidateServiceAccount;
 use App\Http\Middleware\ValidateServiceAccountScope;
 use Illuminate\Foundation\Application;
@@ -30,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
+            SetCurrentOrganization::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
@@ -41,6 +45,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'service.account' => ValidateServiceAccount::class,
             'service.account.scope' => ValidateServiceAccountScope::class,
+            'organization.active' => EnsureOrganizationActive::class,
+            'permission' => CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class App extends Model
@@ -13,6 +14,7 @@ class App extends Model
     protected $fillable = [
         'name',
         'domain',
+        'organization_id',
         'matrix_user_id',
         'app_url',
         'service_api_key',
@@ -49,6 +51,14 @@ class App extends Model
     public function getServiceApiKeyAttribute($value)
     {
         return $value ? decrypt($value) : null;
+    }
+
+    /**
+     * Get the organization this app belongs to
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     /**
@@ -108,5 +118,13 @@ class App extends Model
         $endpoint = ltrim($endpoint, '/');
 
         return $endpoint ? "{$baseUrl}/api/v1/{$endpoint}" : "{$baseUrl}/api/v1";
+    }
+
+    /**
+     * Scope a query to a specific organization
+     */
+    public function scopeForOrganization($query, $organizationId)
+    {
+        return $query->where('organization_id', $organizationId);
     }
 }

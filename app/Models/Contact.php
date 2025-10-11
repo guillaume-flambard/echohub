@@ -12,6 +12,7 @@ class Contact extends Model
 
     protected $fillable = [
         'user_id',
+        'organization_id',
         'matrix_id',
         'type',
         'app_id',
@@ -30,6 +31,14 @@ class Contact extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the organization this contact belongs to
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     /**
@@ -70,5 +79,13 @@ class Contact extends Model
     public function scopeHumans($query)
     {
         return $query->where('type', 'human');
+    }
+
+    /**
+     * Scope a query to a specific organization
+     */
+    public function scopeForOrganization($query, $organizationId)
+    {
+        return $query->where('organization_id', $organizationId);
     }
 }

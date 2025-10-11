@@ -10,6 +10,7 @@ class MinervaContext extends Model
     protected $fillable = [
         'instance_id',
         'user_id',
+        'organization_id',
         'conversation_history',
         'app_state',
     ];
@@ -25,6 +26,14 @@ class MinervaContext extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the organization this context belongs to
+     */
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     /**
@@ -70,5 +79,13 @@ class MinervaContext extends Model
     public function getMessageCount(): int
     {
         return count($this->conversation_history ?? []);
+    }
+
+    /**
+     * Scope a query to a specific organization
+     */
+    public function scopeForOrganization($query, $organizationId)
+    {
+        return $query->where('organization_id', $organizationId);
     }
 }
