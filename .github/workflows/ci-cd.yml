@@ -155,12 +155,26 @@ jobs:
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
 
+    # Required GitHub Secrets (configure in repository settings):
+    # - VPS_HOST: VPS server hostname or IP
+    # - VPS_USER: SSH username for VPS
+    # - VPS_SSH_KEY: Private SSH key for authentication
+    # - APP_KEY: Laravel application key (generate with: php artisan key:generate --show)
+    # - DB_PASSWORD_PROD: Production database password
+    # - DB_PASSWORD_STAGING: Staging database password
+    # - DB_PASSWORD_DEV: Development database password
     - name: 🚀 Deploy to VPS
       uses: appleboy/ssh-action@v1.0.3
+      env:
+        APP_KEY: ${{ secrets.APP_KEY }}
+        DB_PASSWORD_PROD: ${{ secrets.DB_PASSWORD_PROD }}
+        DB_PASSWORD_STAGING: ${{ secrets.DB_PASSWORD_STAGING }}
+        DB_PASSWORD_DEV: ${{ secrets.DB_PASSWORD_DEV }}
       with:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
+        envs: APP_KEY,DB_PASSWORD_PROD,DB_PASSWORD_STAGING,DB_PASSWORD_DEV
         script: |
           set -e
           
@@ -168,20 +182,22 @@ jobs:
           export ENVIRONMENT="${{ steps.env.outputs.environment }}"
           export IMAGE_TAG="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.env.outputs.environment }}-${{ github.sha }}"
           export DOMAIN="${{ steps.env.outputs.domain }}"
-          export APP_KEY="${{ secrets.APP_KEY }}"
-          
-          # Database configuration (using Dokploy PostgreSQL container)
-          export DB_HOST="dokploy-postgres"
+
+          # APP_KEY is passed via env (from secrets)
+          # DB passwords are passed via env (from secrets)
+
+          # Database configuration (using standalone PostgreSQL container)
+          export DB_HOST="standalone-postgres"
           export DB_DATABASE="${{ steps.env.outputs.db_database }}"
           export DB_USERNAME="${{ steps.env.outputs.db_username }}"
-          
-          # Environment-specific database password
+
+          # Environment-specific database password (from env vars passed by appleboy/ssh-action)
           if [[ "$ENVIRONMENT" == "production" ]]; then
-            export DB_PASSWORD="${{ secrets.DB_PASSWORD_PROD }}"
+            export DB_PASSWORD="$DB_PASSWORD_PROD"
           elif [[ "$ENVIRONMENT" == "staging" ]]; then
-            export DB_PASSWORD="${{ secrets.DB_PASSWORD_STAGING }}"
+            export DB_PASSWORD="$DB_PASSWORD_STAGING"
           else
-            export DB_PASSWORD="${{ secrets.DB_PASSWORD_DEV }}"
+            export DB_PASSWORD="$DB_PASSWORD_DEV"
           fi
           
           echo "🚀 Deploying EchoHub to $ENVIRONMENT environment..."
@@ -234,7 +250,7 @@ jobs:
                 - QUEUE_CONNECTION=database
                 
               networks:
-                - dokploy-network
+                - web
               
               labels:
                 # Traefik Configuration (compatible with Dokploy's Traefik container)
@@ -246,7 +262,7 @@ jobs:
                 - "traefik.http.services.echohub-${ENVIRONMENT}.loadbalancer.server.port=8000"
           
           networks:
-            dokploy-network:
+            web:
               external: true
           COMPOSE_EOF
           

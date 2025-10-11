@@ -6,20 +6,34 @@ import { useAutoCloseMobileSidebar } from '@/hooks/use-auto-close-mobile-sidebar
 import { type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 
-export default function AppSidebarLayout({
+function SidebarLayoutContent({
     children,
     breadcrumbs = [],
 }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
     // Automatically close sidebar on mobile for better UX
+    // This hook is called here (inside SidebarProvider) rather than in the parent
     useAutoCloseMobileSidebar();
 
     return (
-        <AppShell variant="sidebar">
+        <>
             <AppSidebar />
             <AppContent variant="sidebar" className="overflow-x-hidden">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
                 {children}
             </AppContent>
+        </>
+    );
+}
+
+export default function AppSidebarLayout({
+    children,
+    breadcrumbs = [],
+}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+    return (
+        <AppShell variant="sidebar">
+            <SidebarLayoutContent breadcrumbs={breadcrumbs}>
+                {children}
+            </SidebarLayoutContent>
         </AppShell>
     );
 }
