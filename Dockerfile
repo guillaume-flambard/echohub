@@ -25,23 +25,21 @@ COPY vite.config.ts tsconfig.json ./
 ENV SKIP_WAYFINDER=1
 RUN pnpm run build
 
-# Stage 2: Final production image using pre-built PHP with extensions
-FROM thecodingmachine/php:8.3-v4-cli
+# Stage 2: Final production image using serversideup/php (pre-built with all extensions)
+FROM serversideup/php:8.3-cli
 
-# Switch to root for installations
+# Switch to root to install packages
 USER root
 
 WORKDIR /var/www/html
 
-# Install system dependencies (minimal)
+# Install system dependencies (minimal) - using official Debian packages
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     curl \
-    zip \
-    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# PHP extensions are already included in thecodingmachine/php:
+# PHP extensions are already included in serversideup/php:
 # - pdo_pgsql, pgsql (database)
 # - gd (image processing)
 # - mbstring, xml (string/XML handling)
@@ -53,10 +51,10 @@ RUN apt-get update && apt-get install -y \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Copy application files
-COPY --chown=docker:docker . .
+COPY --chown=www-data:www-data . .
 
 # Copy built frontend assets from frontend-builder
-COPY --from=frontend-builder --chown=docker:docker /app/public/build ./public/build
+COPY --from=frontend-builder --chown=www-data:www-data /app/public/build ./public/build
 
 # Install PHP dependencies (production)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
@@ -67,7 +65,7 @@ RUN mkdir -p storage/framework/{cache,sessions,views} \
     && mkdir -p bootstrap/cache \
     && mkdir -p database \
     && touch database/database.sqlite \
-    && chown -R docker:docker storage bootstrap/cache database
+    && chown -R www-data:www-data storage bootstrap/cache database
 
 # Expose port
 EXPOSE 8000
@@ -87,14 +85,14 @@ RUN echo '#!/bin/bash' > /start.sh \
     && echo 'echo "Running database migrations..."' >> /start.sh \
     && echo 'php artisan migrate --force --no-interaction' >> /start.sh \
     && echo 'echo "Seeding database..."' >> /start.sh \
-    && echo 'php artisan db:seed --force --class=DatabaseSeeder' >> /start.sh \
+    && echo 'php artisan db:seed --force --class=DatabaseSeeder || echo "Seeding skipped (data already exists)"' >> /start.sh \
     && echo 'echo "Starting server..."' >> /start.sh \
     && echo 'exec php artisan serve --host=0.0.0.0 --port=8000' >> /start.sh \
     && chmod +x /start.sh \
-    && chown docker:docker /start.sh
+    && chown www-data:www-data /start.sh
 
-# Switch back to non-root user
-USER docker
+# Switch to www-data user for security
+USER www-data
 
 # Start with optimization script
 CMD ["/start.sh"]

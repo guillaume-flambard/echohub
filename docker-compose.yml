@@ -14,8 +14,12 @@ services:
       - APP_DEBUG=${APP_DEBUG:-false}
       - APP_URL=${APP_URL:-http://localhost:8000}
 
-      - DB_CONNECTION=${DB_CONNECTION:-sqlite}
-      - DB_DATABASE=${DB_DATABASE:-/var/www/html/database/database.sqlite}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=echohub
+      - DB_USERNAME=echohub
+      - DB_PASSWORD=echohub_password
 
       - MINERVA_AI_PROVIDER=${MINERVA_AI_PROVIDER:-groq}
       - MINERVA_AI_API_KEY=${MINERVA_AI_API_KEY}
@@ -32,6 +36,7 @@ services:
     networks:
       - echohub
     depends_on:
+      - postgres
       - synapse
     restart: unless-stopped
     healthcheck:
@@ -40,6 +45,23 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=echohub
+      - POSTGRES_USER=echohub
+      - POSTGRES_PASSWORD=echohub_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - echohub
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "echohub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   synapse:
     image: matrixdotorg/synapse:latest
@@ -61,6 +83,8 @@ services:
       start_period: 60s
 
 volumes:
+  postgres_data:
+    driver: local
   synapse_data:
     driver: local
 
