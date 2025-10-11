@@ -13,6 +13,7 @@ export class MinervaAppBot {
   private app: AppConfig;
   private laravelApiUrl: string;
   private laravelApiToken: string;
+  private startTime: number;
 
   constructor(
     homeserverUrl: string,
@@ -26,6 +27,7 @@ export class MinervaAppBot {
     this.app = app;
     this.laravelApiUrl = laravelApiUrl;
     this.laravelApiToken = laravelApiToken;
+    this.startTime = Date.now();
 
     // Auto-join rooms when invited
     AutojoinRoomsMixin.setupOnClient(this.client);
@@ -53,6 +55,18 @@ export class MinervaAppBot {
 
     // Only respond to text messages
     if (event.content?.msgtype !== 'm.text') return;
+
+    // CRITICAL: Ignore messages sent before bot started (prevents processing old sync backfill)
+    if (event.origin_server_ts && event.origin_server_ts < this.startTime) {
+      console.log(`⏭️ [${this.app.name}] Ignoring old message (sent before bot started)`);
+      return;
+    }
+
+    // Ignore encrypted messages (bot can't decrypt them)
+    if (event.content?.msgtype === 'm.encrypted') {
+      console.warn(`⚠️ [${this.app.name}] Ignoring encrypted message from ${event.sender}`);
+      return;
+    }
 
     const message = event.content.body;
 

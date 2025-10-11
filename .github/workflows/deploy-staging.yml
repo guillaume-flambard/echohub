@@ -1,0 +1,344 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging, main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: echohub
+  ENVIRONMENT: staging
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: staging
+      url: https://staging-hub.echotravel.app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:staging-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:staging-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+
+      - name: Deploy to Staging VPS
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 15
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD_STAGING }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 15m
+          envs: APP_KEY,DB_PASSWORD
+          script: |
+            set -e
+
+            export ENVIRONMENT="staging"
+            export IMAGE_TAG="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:staging-${{ github.sha }}"
+            export DOMAIN="staging-hub.echotravel.app"
+            export DB_HOST="standalone-postgres"
+            export DB_DATABASE="echohub_staging"
+            export DB_USERNAME="echohub_staging"
+
+            echo "Deploying EchoHub to Staging"
+            echo "Image: $IMAGE_TAG"
+
+            mkdir -p /opt/echohub-staging
+            cd /opt/echohub-staging
+
+            # Backup current deployment info
+            if [ -f docker-compose.yml ]; then
+              CURRENT_IMAGE=$(docker inspect echohub-staging --format='{{.Image}}' 2>/dev/null || echo "")
+              echo "$CURRENT_IMAGE" > .previous_image
+            fi
+
+            # Create docker-compose.yml
+            cat > docker-compose.yml << 'COMPOSE_EOF'
+            version: '3.8'
+
+            services:
+              echohub:
+                image: ${IMAGE_TAG}
+                container_name: echohub-staging
+                restart: unless-stopped
+                environment:
+                  - APP_NAME=EchoHub-Staging
+                  - APP_ENV=staging
+                  - APP_KEY=${APP_KEY}
+                  - APP_DEBUG=true
+                  - APP_URL=https://${DOMAIN}
+                  - LOG_LEVEL=info
+                  - LOG_CHANNEL=daily
+
+                  # Database
+                  - DB_CONNECTION=pgsql
+                  - DB_HOST=${DB_HOST}
+                  - DB_PORT=5432
+                  - DB_DATABASE=${DB_DATABASE}
+                  - DB_USERNAME=${DB_USERNAME}
+                  - DB_PASSWORD=${DB_PASSWORD}
+
+                  # AI Integration
+                  - MINERVA_AI_PROVIDER=ollama
+                  - MINERVA_AI_BASE_URL=http://ollama-service:11434
+                  - MINERVA_AI_MODEL=qwen2.5:3b
+
+                  # Cache
+                  - CACHE_DRIVER=file
+                  - SESSION_DRIVER=file
+                  - QUEUE_CONNECTION=database
+
+                networks:
+                  - web
+
+                labels:
+                  - "traefik.enable=true"
+                  - "traefik.http.routers.echohub-staging.rule=Host(\`${DOMAIN}\`)"
+                  - "traefik.http.routers.echohub-staging.entrypoints=websecure"
+                  - "traefik.http.routers.echohub-staging.tls=true"
+                  - "traefik.http.routers.echohub-staging.tls.certresolver=letsencrypt"
+                  - "traefik.http.services.echohub-staging.loadbalancer.server.port=8000"
+
+            networks:
+              web:
+                external: true
+            COMPOSE_EOF
+
+            # Pull new image
+            if ! docker-compose pull; then
+              echo "Failed to pull image"
+              exit 1
+            fi
+
+            # Deploy with rolling update
+            docker-compose up -d --remove-orphans
+
+            # Wait for container to start
+            echo "Waiting for container..."
+            for i in {1..30}; do
+              if docker-compose ps echohub 2>/dev/null | grep -q "Up"; then
+                echo "Container is running"
+                break
+              fi
+              sleep 2
+            done
+
+            # Wait for app initialization
+            sleep 20
+
+            # Internal health check
+            echo "Running health checks..."
+            HEALTH_OK=false
+            for i in {1..10}; do
+              if docker exec echohub-staging curl -sf http://localhost:8000/up >/dev/null 2>&1; then
+                echo "Internal health check passed"
+                HEALTH_OK=true
+                break
+              fi
+              echo "Waiting... ($i/10)"
+              sleep 5
+            done
+
+            if [ "$HEALTH_OK" = false ]; then
+              echo "Health check failed, rolling back"
+              docker-compose logs --tail=50 echohub
+
+              # Rollback to previous image
+              if [ -f .previous_image ] && [ -n "$(cat .previous_image)" ]; then
+                PREVIOUS_IMAGE=$(cat .previous_image)
+                echo "Rolling back to: $PREVIOUS_IMAGE"
+                docker tag "$PREVIOUS_IMAGE" "$IMAGE_TAG"
+                docker-compose up -d --force-recreate
+              fi
+              exit 1
+            fi
+
+            # Cleanup
+            docker images | grep "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}" | grep "staging" | tail -n +4 | awk '{print $3}' | xargs -r docker rmi || true
+
+            echo "Deployment successful!"
+
+      - name: Run smoke tests
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            DOMAIN="staging-hub.echotravel.app"
+            HEALTH_URL="https://$DOMAIN/up"
+
+            echo "Running smoke tests on $DOMAIN"
+
+            # Test 1: Health endpoint
+            echo "Test 1: Health check"
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "$HEALTH_URL" || echo "000")
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "FAIL: Health check returned HTTP $HTTP_CODE"
+              exit 1
+            fi
+            echo "PASS: Health check OK"
+
+            # Test 2: Homepage loads
+            echo "Test 2: Homepage"
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "https://$DOMAIN/" || echo "000")
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "FAIL: Homepage returned HTTP $HTTP_CODE"
+              exit 1
+            fi
+            echo "PASS: Homepage loads"
+
+            # Test 3: Login page loads
+            echo "Test 3: Login page"
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "https://$DOMAIN/login" || echo "000")
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "FAIL: Login page returned HTTP $HTTP_CODE"
+              exit 1
+            fi
+            echo "PASS: Login page loads"
+
+            # Test 4: Assets load
+            echo "Test 4: Vite manifest exists"
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "https://$DOMAIN/build/manifest.json" || echo "000")
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "FAIL: Vite manifest returned HTTP $HTTP_CODE"
+              exit 1
+            fi
+            echo "PASS: Assets available"
+
+            # Test 5: Database connection
+            echo "Test 5: Database connectivity"
+            cd /opt/echohub-staging
+            if ! docker exec echohub-staging php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';" 2>&1 | grep -q "DB OK"; then
+              echo "FAIL: Database connection failed"
+              exit 1
+            fi
+            echo "PASS: Database connected"
+
+            echo ""
+            echo "All smoke tests passed!"
+
+      - name: Notify Slack on success
+        if: success() && (vars.SLACK_WEBHOOK_URL != '' || secrets.SLACK_WEBHOOK_URL != '')
+        run: |
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL || vars.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "Staging Deployment Successful",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "EchoHub Deployed to Staging"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Environment:*\nStaging"},
+                    {"type": "mrkdwn", "text": "*Status:*\n:white_check_mark: Success"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n`${{ github.sha }}`"},
+                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
+                    {"type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}"},
+                    {"type": "mrkdwn", "text": "*URL:*\n<https://staging-hub.echotravel.app|staging-hub.echotravel.app>"}
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "All smoke tests passed | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow>"
+                    }
+                  ]
+                }
+              ]
+            }'
+
+      - name: Notify Slack on failure
+        if: failure() && (vars.SLACK_WEBHOOK_URL != '' || secrets.SLACK_WEBHOOK_URL != '')
+        run: |
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL || vars.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "Staging Deployment Failed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":x: Staging Deployment Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Environment:*\nStaging"},
+                    {"type": "mrkdwn", "text": "*Status:*\n:x: Failed"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n`${{ github.sha }}`"},
+                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
+                    {"type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}"}
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "View Logs"},
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }'
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "Successfully deployed to Staging"
+            echo "URL: https://staging-hub.echotravel.app"
+            echo "All smoke tests passed"
+          else
+            echo "Deployment failed"
+          fi

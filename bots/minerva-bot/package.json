@@ -8,7 +8,10 @@
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
     "start": "bun run dist/index.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "matrix-bot-sdk": "^0.7.1",
@@ -17,7 +20,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.5",
+    "@vitest/coverage-v8": "^2.1.8",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }

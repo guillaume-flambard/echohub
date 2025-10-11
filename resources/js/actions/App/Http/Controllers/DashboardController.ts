@@ -82,7 +82,7 @@ stats.form = statsForm
 
 /**
 * @see \App\Http\Controllers\DashboardController::recentActivity
-* @see app/Http/Controllers/DashboardController.php:56
+* @see app/Http/Controllers/DashboardController.php:58
 * @route '/api/dashboard/activity'
 */
 export const recentActivity = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ recentActivity.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::recentActivity
-* @see app/Http/Controllers/DashboardController.php:56
+* @see app/Http/Controllers/DashboardController.php:58
 * @route '/api/dashboard/activity'
 */
 recentActivity.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ recentActivity.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::recentActivity
-* @see app/Http/Controllers/DashboardController.php:56
+* @see app/Http/Controllers/DashboardController.php:58
 * @route '/api/dashboard/activity'
 */
 recentActivity.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,7 +116,7 @@ recentActivity.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardController::recentActivity
-* @see app/Http/Controllers/DashboardController.php:56
+* @see app/Http/Controllers/DashboardController.php:58
 * @route '/api/dashboard/activity'
 */
 recentActivity.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -126,7 +126,7 @@ recentActivity.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\DashboardController::recentActivity
-* @see app/Http/Controllers/DashboardController.php:56
+* @see app/Http/Controllers/DashboardController.php:58
 * @route '/api/dashboard/activity'
 */
 const recentActivityForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -136,7 +136,7 @@ const recentActivityForm = (options?: RouteQueryOptions): RouteFormDefinition<'g
 
 /**
 * @see \App\Http\Controllers\DashboardController::recentActivity
-* @see app/Http/Controllers/DashboardController.php:56
+* @see app/Http/Controllers/DashboardController.php:58
 * @route '/api/dashboard/activity'
 */
 recentActivityForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -146,7 +146,7 @@ recentActivityForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get
 
 /**
 * @see \App\Http\Controllers\DashboardController::recentActivity
-* @see app/Http/Controllers/DashboardController.php:56
+* @see app/Http/Controllers/DashboardController.php:58
 * @route '/api/dashboard/activity'
 */
 recentActivityForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ recentActivity.form = recentActivityForm
 
 /**
 * @see \App\Http\Controllers\DashboardController::bookingTrends
-* @see app/Http/Controllers/DashboardController.php:100
+* @see app/Http/Controllers/DashboardController.php:106
 * @route '/api/dashboard/trends'
 */
 export const bookingTrends = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -178,7 +178,7 @@ bookingTrends.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::bookingTrends
-* @see app/Http/Controllers/DashboardController.php:100
+* @see app/Http/Controllers/DashboardController.php:106
 * @route '/api/dashboard/trends'
 */
 bookingTrends.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ bookingTrends.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::bookingTrends
-* @see app/Http/Controllers/DashboardController.php:100
+* @see app/Http/Controllers/DashboardController.php:106
 * @route '/api/dashboard/trends'
 */
 bookingTrends.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -197,7 +197,7 @@ bookingTrends.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardController::bookingTrends
-* @see app/Http/Controllers/DashboardController.php:100
+* @see app/Http/Controllers/DashboardController.php:106
 * @route '/api/dashboard/trends'
 */
 bookingTrends.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -207,7 +207,7 @@ bookingTrends.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 * @see \App\Http\Controllers\DashboardController::bookingTrends
-* @see app/Http/Controllers/DashboardController.php:100
+* @see app/Http/Controllers/DashboardController.php:106
 * @route '/api/dashboard/trends'
 */
 const bookingTrendsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -217,7 +217,7 @@ const bookingTrendsForm = (options?: RouteQueryOptions): RouteFormDefinition<'ge
 
 /**
 * @see \App\Http\Controllers\DashboardController::bookingTrends
-* @see app/Http/Controllers/DashboardController.php:100
+* @see app/Http/Controllers/DashboardController.php:106
 * @route '/api/dashboard/trends'
 */
 bookingTrendsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -227,7 +227,7 @@ bookingTrendsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 
 /**
 * @see \App\Http\Controllers\DashboardController::bookingTrends
-* @see app/Http/Controllers/DashboardController.php:100
+* @see app/Http/Controllers/DashboardController.php:106
 * @route '/api/dashboard/trends'
 */
 bookingTrendsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

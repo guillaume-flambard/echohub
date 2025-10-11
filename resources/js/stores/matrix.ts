@@ -1,6 +1,6 @@
+import { getErrorMessage } from '@/lib/error-utils';
 import * as sdk from 'matrix-js-sdk';
 import { create } from 'zustand';
-import { getErrorMessage } from '@/lib/error-utils';
 
 // Matrix SDK types - using the actual SDK types
 type MatrixEvent = sdk.MatrixEvent;
@@ -68,14 +68,11 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
 
             // Wait for initial sync to complete
             await new Promise<void>((resolve) => {
-                client.once(
-                    sdk.ClientEvent.Sync,
-                    (state: string) => {
-                        if (state === 'PREPARED') {
-                            resolve();
-                        }
-                    },
-                );
+                client.once(sdk.ClientEvent.Sync, (state: string) => {
+                    if (state === 'PREPARED') {
+                        resolve();
+                    }
+                });
                 client.startClient({ initialSyncLimit: 50 });
             });
 
@@ -193,14 +190,11 @@ export const useMatrixStore = create<MatrixState>((set, get) => ({
 
                 // Wait for initial sync
                 await new Promise<void>((resolve) => {
-                    client.once(
-                        sdk.ClientEvent.Sync,
-                        (state: string) => {
-                            if (state === 'PREPARED') {
-                                resolve();
-                            }
-                        },
-                    );
+                    client.once(sdk.ClientEvent.Sync, (state: string) => {
+                        if (state === 'PREPARED') {
+                            resolve();
+                        }
+                    });
                     client.startClient({ initialSyncLimit: 50 });
                 });
 

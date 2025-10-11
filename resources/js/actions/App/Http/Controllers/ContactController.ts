@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:17
+* @see app/Http/Controllers/ContactController.php:20
 * @route '/api/contacts'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:17
+* @see app/Http/Controllers/ContactController.php:20
 * @route '/api/contacts'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:17
+* @see app/Http/Controllers/ContactController.php:20
 * @route '/api/contacts'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:17
+* @see app/Http/Controllers/ContactController.php:20
 * @route '/api/contacts'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:17
+* @see app/Http/Controllers/ContactController.php:20
 * @route '/api/contacts'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:17
+* @see app/Http/Controllers/ContactController.php:20
 * @route '/api/contacts'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\ContactController::index
-* @see app/Http/Controllers/ContactController.php:17
+* @see app/Http/Controllers/ContactController.php:20
 * @route '/api/contacts'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\ContactController::store
-* @see app/Http/Controllers/ContactController.php:53
+* @see app/Http/Controllers/ContactController.php:52
 * @route '/api/contacts'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\ContactController::store
-* @see app/Http/Controllers/ContactController.php:53
+* @see app/Http/Controllers/ContactController.php:52
 * @route '/api/contacts'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ContactController::store
-* @see app/Http/Controllers/ContactController.php:53
+* @see app/Http/Controllers/ContactController.php:52
 * @route '/api/contacts'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\ContactController::store
-* @see app/Http/Controllers/ContactController.php:53
+* @see app/Http/Controllers/ContactController.php:52
 * @route '/api/contacts'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\ContactController::store
-* @see app/Http/Controllers/ContactController.php:53
+* @see app/Http/Controllers/ContactController.php:52
 * @route '/api/contacts'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\ContactController::show
-* @see app/Http/Controllers/ContactController.php:39
+* @see app/Http/Controllers/ContactController.php:40
 * @route '/api/contacts/{contact}'
 */
 export const show = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -153,7 +153,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ContactController::show
-* @see app/Http/Controllers/ContactController.php:39
+* @see app/Http/Controllers/ContactController.php:40
 * @route '/api/contacts/{contact}'
 */
 show.url = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -186,7 +186,7 @@ show.url = (args: { contact: number | { id: number } } | [contact: number | { id
 
 /**
 * @see \App\Http\Controllers\ContactController::show
-* @see app/Http/Controllers/ContactController.php:39
+* @see app/Http/Controllers/ContactController.php:40
 * @route '/api/contacts/{contact}'
 */
 show.get = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -196,7 +196,7 @@ show.get = (args: { contact: number | { id: number } } | [contact: number | { id
 
 /**
 * @see \App\Http\Controllers\ContactController::show
-* @see app/Http/Controllers/ContactController.php:39
+* @see app/Http/Controllers/ContactController.php:40
 * @route '/api/contacts/{contact}'
 */
 show.head = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -206,7 +206,7 @@ show.head = (args: { contact: number | { id: number } } | [contact: number | { i
 
 /**
 * @see \App\Http\Controllers\ContactController::show
-* @see app/Http/Controllers/ContactController.php:39
+* @see app/Http/Controllers/ContactController.php:40
 * @route '/api/contacts/{contact}'
 */
 const showForm = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -216,7 +216,7 @@ const showForm = (args: { contact: number | { id: number } } | [contact: number 
 
 /**
 * @see \App\Http\Controllers\ContactController::show
-* @see app/Http/Controllers/ContactController.php:39
+* @see app/Http/Controllers/ContactController.php:40
 * @route '/api/contacts/{contact}'
 */
 showForm.get = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -226,7 +226,7 @@ showForm.get = (args: { contact: number | { id: number } } | [contact: number | 
 
 /**
 * @see \App\Http\Controllers\ContactController::show
-* @see app/Http/Controllers/ContactController.php:39
+* @see app/Http/Controllers/ContactController.php:40
 * @route '/api/contacts/{contact}'
 */
 showForm.head = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -243,7 +243,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\ContactController::update
-* @see app/Http/Controllers/ContactController.php:79
+* @see app/Http/Controllers/ContactController.php:72
 * @route '/api/contacts/{contact}'
 */
 export const update = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -258,7 +258,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ContactController::update
-* @see app/Http/Controllers/ContactController.php:79
+* @see app/Http/Controllers/ContactController.php:72
 * @route '/api/contacts/{contact}'
 */
 update.url = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -291,7 +291,7 @@ update.url = (args: { contact: number | { id: number } } | [contact: number | { 
 
 /**
 * @see \App\Http\Controllers\ContactController::update
-* @see app/Http/Controllers/ContactController.php:79
+* @see app/Http/Controllers/ContactController.php:72
 * @route '/api/contacts/{contact}'
 */
 update.put = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -301,7 +301,7 @@ update.put = (args: { contact: number | { id: number } } | [contact: number | { 
 
 /**
 * @see \App\Http\Controllers\ContactController::update
-* @see app/Http/Controllers/ContactController.php:79
+* @see app/Http/Controllers/ContactController.php:72
 * @route '/api/contacts/{contact}'
 */
 const updateForm = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -316,7 +316,7 @@ const updateForm = (args: { contact: number | { id: number } } | [contact: numbe
 
 /**
 * @see \App\Http\Controllers\ContactController::update
-* @see app/Http/Controllers/ContactController.php:79
+* @see app/Http/Controllers/ContactController.php:72
 * @route '/api/contacts/{contact}'
 */
 updateForm.put = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -333,7 +333,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\ContactController::destroy
-* @see app/Http/Controllers/ContactController.php:99
+* @see app/Http/Controllers/ContactController.php:85
 * @route '/api/contacts/{contact}'
 */
 export const destroy = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -348,7 +348,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\ContactController::destroy
-* @see app/Http/Controllers/ContactController.php:99
+* @see app/Http/Controllers/ContactController.php:85
 * @route '/api/contacts/{contact}'
 */
 destroy.url = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -381,7 +381,7 @@ destroy.url = (args: { contact: number | { id: number } } | [contact: number | {
 
 /**
 * @see \App\Http\Controllers\ContactController::destroy
-* @see app/Http/Controllers/ContactController.php:99
+* @see app/Http/Controllers/ContactController.php:85
 * @route '/api/contacts/{contact}'
 */
 destroy.delete = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -391,7 +391,7 @@ destroy.delete = (args: { contact: number | { id: number } } | [contact: number 
 
 /**
 * @see \App\Http\Controllers\ContactController::destroy
-* @see app/Http/Controllers/ContactController.php:99
+* @see app/Http/Controllers/ContactController.php:85
 * @route '/api/contacts/{contact}'
 */
 const destroyForm = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -406,7 +406,7 @@ const destroyForm = (args: { contact: number | { id: number } } | [contact: numb
 
 /**
 * @see \App\Http\Controllers\ContactController::destroy
-* @see app/Http/Controllers/ContactController.php:99
+* @see app/Http/Controllers/ContactController.php:85
 * @route '/api/contacts/{contact}'
 */
 destroyForm.delete = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

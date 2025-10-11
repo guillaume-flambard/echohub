@@ -5,24 +5,38 @@ namespace App\Services\MinervaAI;
 use App\Models\AISetting;
 use App\Models\App;
 use App\Models\MinervaContext as MinervaContextModel;
+use Illuminate\Support\Facades\Cache;
 
 class InstanceManager
 {
+    /**
+     * Get cache key for a Minerva context
+     */
+    private function getCacheKey(string $instanceId, int $userId): string
+    {
+        return "minerva_context_{$userId}_{$instanceId}";
+    }
+
     /**
      * Get or create a Minerva context for an app instance
      */
     public function getOrCreateContext(string $instanceId, int $userId): MinervaContextModel
     {
-        return MinervaContextModel::firstOrCreate(
-            [
-                'instance_id' => $instanceId,
-                'user_id' => $userId,
-            ],
-            [
-                'conversation_history' => [],
-                'app_state' => [],
-            ]
-        );
+        // Try cache first (15 minutes TTL)
+        $cacheKey = $this->getCacheKey($instanceId, $userId);
+
+        return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($instanceId, $userId) {
+            return MinervaContextModel::firstOrCreate(
+                [
+                    'instance_id' => $instanceId,
+                    'user_id' => $userId,
+                ],
+                [
+                    'conversation_history' => [],
+                    'app_state' => [],
+                ]
+            );
+        });
     }
 
     /**
@@ -84,6 +98,9 @@ class InstanceManager
                 'conversation_history' => $history,
                 'updated_at' => now(),
             ]);
+
+            // Invalidate cache after update
+            Cache::forget($this->getCacheKey($app->matrix_user_id, $userId));
         }
 
         return $response;
@@ -103,6 +120,9 @@ class InstanceManager
                 'conversation_history' => [],
             ]);
 
+            // Invalidate cache after clearing
+            Cache::forget($this->getCacheKey($instanceId, $userId));
+
             return true;
         }
 
@@ -114,10 +134,15 @@ class InstanceManager
      */
     public function getHistory(string $instanceId, int $userId): array
     {
-        $context = MinervaContextModel::where('instance_id', $instanceId)
-            ->where('user_id', $userId)
-            ->first();
+        // Use cache to avoid repeated database queries
+        $cacheKey = $this->getCacheKey($instanceId, $userId);
 
-        return $context?->conversation_history ?? [];
+        return Cache::remember($cacheKey.'_history', now()->addMinutes(15), function () use ($instanceId, $userId) {
+            $context = MinervaContextModel::where('instance_id', $instanceId)
+                ->where('user_id', $userId)
+                ->first();
+
+            return $context?->conversation_history ?? [];
+        });
     }
 }

@@ -109,10 +109,13 @@ export class BotManager {
     }
 
     try {
-      // Login to Matrix
-      const response = await axios.post(`${this.homeserverUrl}/_matrix/client/r0/login`, {
+      // Login to Matrix using v3 endpoint (r0 is deprecated)
+      const response = await axios.post(`${this.homeserverUrl}/_matrix/client/v3/login`, {
         type: 'm.login.password',
-        user: username,
+        identifier: {
+          type: 'm.id.user',
+          user: username,
+        },
         password: password,
       });
 

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AISettingController::index
-* @see app/Http/Controllers/AISettingController.php:14
+* @see app/Http/Controllers/AISettingController.php:15
 * @route '/api/ai-settings'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\AISettingController::index
-* @see app/Http/Controllers/AISettingController.php:14
+* @see app/Http/Controllers/AISettingController.php:15
 * @route '/api/ai-settings'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AISettingController::index
-* @see app/Http/Controllers/AISettingController.php:14
+* @see app/Http/Controllers/AISettingController.php:15
 * @route '/api/ai-settings'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AISettingController::index
-* @see app/Http/Controllers/AISettingController.php:14
+* @see app/Http/Controllers/AISettingController.php:15
 * @route '/api/ai-settings'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AISettingController::index
-* @see app/Http/Controllers/AISettingController.php:14
+* @see app/Http/Controllers/AISettingController.php:15
 * @route '/api/ai-settings'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\AISettingController::index
-* @see app/Http/Controllers/AISettingController.php:14
+* @see app/Http/Controllers/AISettingController.php:15
 * @route '/api/ai-settings'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AISettingController::index
-* @see app/Http/Controllers/AISettingController.php:14
+* @see app/Http/Controllers/AISettingController.php:15
 * @route '/api/ai-settings'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\AISettingController::update
-* @see app/Http/Controllers/AISettingController.php:44
+* @see app/Http/Controllers/AISettingController.php:45
 * @route '/api/ai-settings'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -97,7 +97,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\AISettingController::update
-* @see app/Http/Controllers/AISettingController.php:44
+* @see app/Http/Controllers/AISettingController.php:45
 * @route '/api/ai-settings'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AISettingController::update
-* @see app/Http/Controllers/AISettingController.php:44
+* @see app/Http/Controllers/AISettingController.php:45
 * @route '/api/ai-settings'
 */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -116,7 +116,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
 /**
 * @see \App\Http\Controllers\AISettingController::update
-* @see app/Http/Controllers/AISettingController.php:44
+* @see app/Http/Controllers/AISettingController.php:45
 * @route '/api/ai-settings'
 */
 const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -131,7 +131,7 @@ const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\AISettingController::update
-* @see app/Http/Controllers/AISettingController.php:44
+* @see app/Http/Controllers/AISettingController.php:45
 * @route '/api/ai-settings'
 */
 updateForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -148,7 +148,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\AISettingController::availableModels
-* @see app/Http/Controllers/AISettingController.php:80
+* @see app/Http/Controllers/AISettingController.php:77
 * @route '/api/ai-settings/models'
 */
 export const availableModels = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -163,7 +163,7 @@ availableModels.definition = {
 
 /**
 * @see \App\Http\Controllers\AISettingController::availableModels
-* @see app/Http/Controllers/AISettingController.php:80
+* @see app/Http/Controllers/AISettingController.php:77
 * @route '/api/ai-settings/models'
 */
 availableModels.url = (options?: RouteQueryOptions) => {
@@ -172,7 +172,7 @@ availableModels.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AISettingController::availableModels
-* @see app/Http/Controllers/AISettingController.php:80
+* @see app/Http/Controllers/AISettingController.php:77
 * @route '/api/ai-settings/models'
 */
 availableModels.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -182,7 +182,7 @@ availableModels.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\AISettingController::availableModels
-* @see app/Http/Controllers/AISettingController.php:80
+* @see app/Http/Controllers/AISettingController.php:77
 * @route '/api/ai-settings/models'
 */
 availableModels.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -192,7 +192,7 @@ availableModels.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 * @see \App\Http\Controllers\AISettingController::availableModels
-* @see app/Http/Controllers/AISettingController.php:80
+* @see app/Http/Controllers/AISettingController.php:77
 * @route '/api/ai-settings/models'
 */
 const availableModelsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -202,7 +202,7 @@ const availableModelsForm = (options?: RouteQueryOptions): RouteFormDefinition<'
 
 /**
 * @see \App\Http\Controllers\AISettingController::availableModels
-* @see app/Http/Controllers/AISettingController.php:80
+* @see app/Http/Controllers/AISettingController.php:77
 * @route '/api/ai-settings/models'
 */
 availableModelsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -212,7 +212,7 @@ availableModelsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'ge
 
 /**
 * @see \App\Http\Controllers\AISettingController::availableModels
-* @see app/Http/Controllers/AISettingController.php:80
+* @see app/Http/Controllers/AISettingController.php:77
 * @route '/api/ai-settings/models'
 */
 availableModelsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

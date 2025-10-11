@@ -81,7 +81,7 @@ send.form = sendForm
 
 /**
 * @see \App\Http\Controllers\MessageController::history
-* @see app/Http/Controllers/MessageController.php:100
+* @see app/Http/Controllers/MessageController.php:97
 * @route '/api/contacts/{contact}/messages'
 */
 export const history = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ history.definition = {
 
 /**
 * @see \App\Http\Controllers\MessageController::history
-* @see app/Http/Controllers/MessageController.php:100
+* @see app/Http/Controllers/MessageController.php:97
 * @route '/api/contacts/{contact}/messages'
 */
 history.url = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -129,7 +129,7 @@ history.url = (args: { contact: number | { id: number } } | [contact: number | {
 
 /**
 * @see \App\Http\Controllers\MessageController::history
-* @see app/Http/Controllers/MessageController.php:100
+* @see app/Http/Controllers/MessageController.php:97
 * @route '/api/contacts/{contact}/messages'
 */
 history.get = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -139,7 +139,7 @@ history.get = (args: { contact: number | { id: number } } | [contact: number | {
 
 /**
 * @see \App\Http\Controllers\MessageController::history
-* @see app/Http/Controllers/MessageController.php:100
+* @see app/Http/Controllers/MessageController.php:97
 * @route '/api/contacts/{contact}/messages'
 */
 history.head = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -149,7 +149,7 @@ history.head = (args: { contact: number | { id: number } } | [contact: number | 
 
 /**
 * @see \App\Http\Controllers\MessageController::history
-* @see app/Http/Controllers/MessageController.php:100
+* @see app/Http/Controllers/MessageController.php:97
 * @route '/api/contacts/{contact}/messages'
 */
 const historyForm = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -159,7 +159,7 @@ const historyForm = (args: { contact: number | { id: number } } | [contact: numb
 
 /**
 * @see \App\Http\Controllers\MessageController::history
-* @see app/Http/Controllers/MessageController.php:100
+* @see app/Http/Controllers/MessageController.php:97
 * @route '/api/contacts/{contact}/messages'
 */
 historyForm.get = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -169,7 +169,7 @@ historyForm.get = (args: { contact: number | { id: number } } | [contact: number
 
 /**
 * @see \App\Http\Controllers\MessageController::history
-* @see app/Http/Controllers/MessageController.php:100
+* @see app/Http/Controllers/MessageController.php:97
 * @route '/api/contacts/{contact}/messages'
 */
 historyForm.head = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -186,7 +186,7 @@ history.form = historyForm
 
 /**
 * @see \App\Http\Controllers\MessageController::clearHistory
-* @see app/Http/Controllers/MessageController.php:139
+* @see app/Http/Controllers/MessageController.php:136
 * @route '/api/contacts/{contact}/messages'
 */
 export const clearHistory = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -201,7 +201,7 @@ clearHistory.definition = {
 
 /**
 * @see \App\Http\Controllers\MessageController::clearHistory
-* @see app/Http/Controllers/MessageController.php:139
+* @see app/Http/Controllers/MessageController.php:136
 * @route '/api/contacts/{contact}/messages'
 */
 clearHistory.url = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -234,7 +234,7 @@ clearHistory.url = (args: { contact: number | { id: number } } | [contact: numbe
 
 /**
 * @see \App\Http\Controllers\MessageController::clearHistory
-* @see app/Http/Controllers/MessageController.php:139
+* @see app/Http/Controllers/MessageController.php:136
 * @route '/api/contacts/{contact}/messages'
 */
 clearHistory.delete = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -244,7 +244,7 @@ clearHistory.delete = (args: { contact: number | { id: number } } | [contact: nu
 
 /**
 * @see \App\Http\Controllers\MessageController::clearHistory
-* @see app/Http/Controllers/MessageController.php:139
+* @see app/Http/Controllers/MessageController.php:136
 * @route '/api/contacts/{contact}/messages'
 */
 const clearHistoryForm = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -259,7 +259,7 @@ const clearHistoryForm = (args: { contact: number | { id: number } } | [contact:
 
 /**
 * @see \App\Http\Controllers\MessageController::clearHistory
-* @see app/Http/Controllers/MessageController.php:139
+* @see app/Http/Controllers/MessageController.php:136
 * @route '/api/contacts/{contact}/messages'
 */
 clearHistoryForm.delete = (args: { contact: number | { id: number } } | [contact: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

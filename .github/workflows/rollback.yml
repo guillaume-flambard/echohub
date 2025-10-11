@@ -1,0 +1,245 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+      backup_timestamp:
+        description: 'Backup timestamp (YYYY-MM-DD_HH-MM-SS) or "latest"'
+        required: false
+        default: 'latest'
+      confirm:
+        description: 'Type environment name to confirm rollback'
+        required: true
+
+jobs:
+  validate:
+    name: Validate Rollback Request
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "${{ github.event.inputs.environment }}" ]; then
+            echo "ERROR: Confirmation does not match environment"
+            echo "You must type '${{ github.event.inputs.environment }}' to confirm"
+            exit 1
+          fi
+          echo "Rollback confirmed for: ${{ github.event.inputs.environment }}"
+
+  rollback:
+    name: Rollback ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    needs: validate
+    timeout-minutes: 15
+    environment:
+      name: ${{ github.event.inputs.environment }}-rollback
+
+    steps:
+      - name: Execute rollback
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 12
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+            BACKUP_TIMESTAMP="${{ github.event.inputs.backup_timestamp }}"
+            BACKUP_DIR="/var/backups/echohub/$ENVIRONMENT"
+            DEPLOY_DIR="/opt/echohub-$ENVIRONMENT"
+
+            echo "========================================="
+            echo "ROLLBACK: $ENVIRONMENT"
+            echo "========================================="
+
+            cd "$DEPLOY_DIR"
+
+            # Find backup to restore
+            if [ "$BACKUP_TIMESTAMP" == "latest" ]; then
+              # Use most recent backup
+              BACKUP_IMAGE=$(sudo find "$BACKUP_DIR" -name "image-*.txt" -type f | sort -r | head -1)
+              BACKUP_DB=$(sudo find "$BACKUP_DIR" -name "database-*.sqlite" -type f | sort -r | head -1)
+              BACKUP_CONFIG=$(sudo find "$BACKUP_DIR" -name "docker-compose-*.yml" -type f | sort -r | head -1)
+            else
+              # Use specific backup
+              BACKUP_IMAGE=$(sudo find "$BACKUP_DIR" -name "image-*${BACKUP_TIMESTAMP}*.txt" -type f | head -1)
+              BACKUP_DB=$(sudo find "$BACKUP_DIR" -name "database-*${BACKUP_TIMESTAMP}*.sqlite" -type f | head -1)
+              BACKUP_CONFIG=$(sudo find "$BACKUP_DIR" -name "docker-compose-*${BACKUP_TIMESTAMP}*.yml" -type f | head -1)
+            fi
+
+            if [ -z "$BACKUP_IMAGE" ]; then
+              echo "ERROR: No backup found for timestamp: $BACKUP_TIMESTAMP"
+              echo "Available backups:"
+              sudo ls -lh "$BACKUP_DIR"
+              exit 1
+            fi
+
+            echo "Found backups:"
+            echo "  Image: $BACKUP_IMAGE"
+            echo "  Database: $BACKUP_DB"
+            echo "  Config: $BACKUP_CONFIG"
+
+            # Stop current container
+            echo "Stopping current container..."
+            docker-compose down || true
+
+            # Restore docker-compose config
+            if [ -n "$BACKUP_CONFIG" ] && [ -f "$BACKUP_CONFIG" ]; then
+              echo "Restoring configuration..."
+              sudo cp "$BACKUP_CONFIG" docker-compose.yml
+            fi
+
+            # Restore database
+            if [ -n "$BACKUP_DB" ] && [ -f "$BACKUP_DB" ]; then
+              echo "Restoring database..."
+              sudo cp "$BACKUP_DB" database/database.sqlite
+              sudo chown www-data:www-data database/database.sqlite
+              sudo chmod 664 database/database.sqlite
+            fi
+
+            # Get previous image
+            PREVIOUS_IMAGE=$(sudo cat "$BACKUP_IMAGE")
+            echo "Rolling back to image: $PREVIOUS_IMAGE"
+
+            # Pull previous image
+            docker pull "$PREVIOUS_IMAGE" || echo "Image already available locally"
+
+            # Start with previous image
+            export IMAGE_TAG="$PREVIOUS_IMAGE"
+            docker-compose up -d
+
+            # Wait for container
+            echo "Waiting for container to start..."
+            for i in {1..30}; do
+              if docker-compose ps echohub 2>/dev/null | grep -q "Up"; then
+                break
+              fi
+              sleep 2
+            done
+
+            # Wait for initialization
+            sleep 20
+
+            # Health check
+            CONTAINER_NAME="echohub-${ENVIRONMENT}"
+            if docker exec "$CONTAINER_NAME" curl -sf http://localhost:8000/up >/dev/null 2>&1; then
+              echo "========================================="
+              echo "ROLLBACK SUCCESSFUL"
+              echo "========================================="
+              echo "Environment: $ENVIRONMENT"
+              echo "Image: $PREVIOUS_IMAGE"
+              echo "========================================="
+            else
+              echo "========================================="
+              echo "ROLLBACK FAILED - HEALTH CHECK"
+              echo "========================================="
+              docker-compose logs --tail=50 echohub
+              exit 1
+            fi
+
+      - name: Verify rollback
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+
+            # Determine domain
+            case "$ENVIRONMENT" in
+              production)
+                DOMAIN="hub.echotravel.app"
+                ;;
+              staging)
+                DOMAIN="staging-hub.echotravel.app"
+                ;;
+              development)
+                DOMAIN="dev-hub.echotravel.app"
+                ;;
+            esac
+
+            echo "Verifying rollback on $DOMAIN..."
+
+            # Run smoke tests
+            for i in {1..5}; do
+              HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "https://$DOMAIN/up" 2>/dev/null || echo "000")
+              if [ "$HTTP_CODE" == "200" ]; then
+                echo "PASS: Health check ($i/5)"
+              else
+                echo "FAIL: Health check returned HTTP $HTTP_CODE"
+                exit 1
+              fi
+              sleep 5
+            done
+
+            echo "Rollback verification complete"
+
+      - name: Notify Slack
+        if: always() && (vars.SLACK_WEBHOOK_URL != '' || secrets.SLACK_WEBHOOK_URL != '')
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            STATUS_EMOJI=":white_check_mark:"
+            STATUS_TEXT="Successful"
+            COLOR="good"
+          else
+            STATUS_EMOJI=":x:"
+            STATUS_TEXT="Failed"
+            COLOR="danger"
+          fi
+
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL || vars.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"Rollback $STATUS_TEXT\",
+              \"blocks\": [
+                {
+                  \"type\": \"header\",
+                  \"text\": {
+                    \"type\": \"plain_text\",
+                    \"text\": \"$STATUS_EMOJI Rollback $STATUS_TEXT\"
+                  }
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    {\"type\": \"mrkdwn\", \"text\": \"*Environment:*\n${{ github.event.inputs.environment }}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Status:*\n$STATUS_TEXT\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Backup:*\n${{ github.event.inputs.backup_timestamp }}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Initiated by:*\n${{ github.actor }}\"}
+                  ]
+                },
+                {
+                  \"type\": \"context\",
+                  \"elements\": [
+                    {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View rollback logs>\"
+                    }
+                  ]
+                }
+              ]
+            }"
+
+      - name: Rollback summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "Rollback successful for ${{ github.event.inputs.environment }}"
+            echo "Previous state has been restored"
+          else
+            echo "Rollback failed for ${{ github.event.inputs.environment }}"
+            echo "Manual intervention required"
+          fi

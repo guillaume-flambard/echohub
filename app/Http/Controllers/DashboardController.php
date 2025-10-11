@@ -26,8 +26,10 @@ class DashboardController extends Controller
             ->count();
 
         // Get total messages today
+        // Optimize: only select conversation_history column, don't load relationships
         $messagesToday = MinervaContext::where('user_id', $user->id)
             ->whereJsonLength('conversation_history', '>', 0)
+            ->select('conversation_history')
             ->get()
             ->sum(function ($context) {
                 $history = $context->conversation_history ?? [];
@@ -58,9 +60,13 @@ class DashboardController extends Controller
         $user = $request->user();
 
         // Get recent messages from all conversations
+        // Eager load contact and app to prevent N+1 queries
         $contexts = MinervaContext::where('user_id', $user->id)
             ->whereJsonLength('conversation_history', '>', 0)
-            ->with('contact.app')
+            ->with(['contact' => function ($query) {
+                $query->with('app');
+            }])
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $recentMessages = [];
@@ -108,7 +114,9 @@ class DashboardController extends Controller
             $dateEnd = $date->copy()->endOfDay();
 
             // Count messages for this day
+            // Optimize: only select conversation_history column
             $messageCount = MinervaContext::where('user_id', $user->id)
+                ->select('conversation_history')
                 ->get()
                 ->sum(function ($context) use ($date, $dateEnd) {
                     $history = $context->conversation_history ?? [];

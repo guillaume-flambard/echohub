@@ -1,0 +1,556 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy-production" to confirm'
+        required: true
+        default: ''
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: echohub
+  ENVIRONMENT: production
+
+jobs:
+  # Pre-deployment validation
+  pre-deploy-checks:
+    name: Pre-Deployment Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Validate manual dispatch input
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "deploy-production" ]; then
+            echo "ERROR: Confirmation text does not match"
+            echo "You must type 'deploy-production' to confirm"
+            exit 1
+          fi
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="manual-$(date +%Y%m%d-%H%M%S)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deploying version: $VERSION"
+
+  # Create backup before deployment
+  backup:
+    name: Create Pre-Deployment Backup
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    timeout-minutes: 10
+
+    steps:
+      - name: Create database backup
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 8
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            BACKUP_DIR="/var/backups/echohub/production"
+            TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+            VERSION="${{ needs.pre-deploy-checks.outputs.version }}"
+
+            echo "Creating production backup before deployment: $VERSION"
+            sudo mkdir -p "$BACKUP_DIR"
+
+            # Backup database
+            if [ -f /opt/echohub-production/database/database.sqlite ]; then
+              sudo cp /opt/echohub-production/database/database.sqlite \
+                "$BACKUP_DIR/database-${VERSION}-${TIMESTAMP}.sqlite"
+              echo "Database backup created"
+            fi
+
+            # Backup Docker image reference
+            if docker inspect echohub-production >/dev/null 2>&1; then
+              CURRENT_IMAGE=$(docker inspect echohub-production --format='{{.Image}}')
+              echo "$CURRENT_IMAGE" | sudo tee "$BACKUP_DIR/image-${VERSION}-${TIMESTAMP}.txt"
+              echo "Current image: $CURRENT_IMAGE"
+            fi
+
+            # Backup environment config
+            if [ -f /opt/echohub-production/docker-compose.yml ]; then
+              sudo cp /opt/echohub-production/docker-compose.yml \
+                "$BACKUP_DIR/docker-compose-${VERSION}-${TIMESTAMP}.yml"
+              echo "Config backup created"
+            fi
+
+            # Keep last 10 backups
+            cd "$BACKUP_DIR"
+            sudo find . -name "database-*.sqlite" -type f | sort -r | tail -n +11 | xargs -r sudo rm
+            sudo find . -name "image-*.txt" -type f | sort -r | tail -n +11 | xargs -r sudo rm
+            sudo find . -name "docker-compose-*.yml" -type f | sort -r | tail -n +11 | xargs -r sudo rm
+
+            echo "Backup completed successfully"
+
+  # Build and push production image
+  build:
+    name: Build Production Image
+    runs-on: ubuntu-latest
+    needs: [pre-deploy-checks, backup]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:prod-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ needs.pre-deploy-checks.outputs.version }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:prod-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ needs.pre-deploy-checks.outputs.version }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+
+  # Manual approval gate
+  approval:
+    name: Approve Production Deployment
+    runs-on: ubuntu-latest
+    needs: [pre-deploy-checks, backup, build]
+    timeout-minutes: 60
+    environment:
+      name: production-approval
+      url: https://hub.echotravel.app
+
+    steps:
+      - name: Wait for approval
+        run: |
+          echo "Production deployment approved"
+          echo "Version: ${{ needs.pre-deploy-checks.outputs.version }}"
+          echo "Commit: ${{ github.sha }}"
+
+  # Deploy to production
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [pre-deploy-checks, approval]
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://hub.echotravel.app
+
+    steps:
+      - name: Deploy to Production VPS
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 20
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD_PROD }}
+          VERSION: ${{ needs.pre-deploy-checks.outputs.version }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 20m
+          envs: APP_KEY,DB_PASSWORD,VERSION
+          script: |
+            set -e
+
+            export ENVIRONMENT="production"
+            export IMAGE_TAG="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:prod-${{ github.sha }}"
+            export DOMAIN="hub.echotravel.app"
+            export DB_HOST="standalone-postgres"
+            export DB_DATABASE="echohub_production"
+            export DB_USERNAME="echohub_prod"
+
+            echo "========================================="
+            echo "PRODUCTION DEPLOYMENT"
+            echo "========================================="
+            echo "Version: $VERSION"
+            echo "Image: $IMAGE_TAG"
+            echo "Domain: $DOMAIN"
+            echo "========================================="
+
+            mkdir -p /opt/echohub-production
+            cd /opt/echohub-production
+
+            # Save current state for rollback
+            if docker inspect echohub-production >/dev/null 2>&1; then
+              CURRENT_IMAGE=$(docker inspect echohub-production --format='{{.Image}}')
+              echo "$CURRENT_IMAGE" > .rollback_image
+              echo "Rollback image saved: $CURRENT_IMAGE"
+            fi
+
+            # Create production docker-compose.yml
+            cat > docker-compose.yml << 'COMPOSE_EOF'
+            version: '3.8'
+
+            services:
+              echohub:
+                image: ${IMAGE_TAG}
+                container_name: echohub-production
+                restart: unless-stopped
+                deploy:
+                  resources:
+                    limits:
+                      cpus: '2.0'
+                      memory: 2G
+                    reservations:
+                      cpus: '1.0'
+                      memory: 1G
+                environment:
+                  - APP_NAME=EchoHub
+                  - APP_ENV=production
+                  - APP_KEY=${APP_KEY}
+                  - APP_DEBUG=false
+                  - APP_URL=https://${DOMAIN}
+                  - LOG_LEVEL=warning
+                  - LOG_CHANNEL=daily
+
+                  # Database
+                  - DB_CONNECTION=pgsql
+                  - DB_HOST=${DB_HOST}
+                  - DB_PORT=5432
+                  - DB_DATABASE=${DB_DATABASE}
+                  - DB_USERNAME=${DB_USERNAME}
+                  - DB_PASSWORD=${DB_PASSWORD}
+
+                  # AI Integration
+                  - MINERVA_AI_PROVIDER=ollama
+                  - MINERVA_AI_BASE_URL=http://ollama-service:11434
+                  - MINERVA_AI_MODEL=qwen2.5:3b
+
+                  # Cache & Session
+                  - CACHE_DRIVER=file
+                  - SESSION_DRIVER=file
+                  - QUEUE_CONNECTION=database
+
+                  # Security
+                  - SESSION_SECURE_COOKIE=true
+                  - SESSION_SAME_SITE=lax
+
+                networks:
+                  - web
+
+                healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                  start_period: 60s
+
+                labels:
+                  - "traefik.enable=true"
+                  - "traefik.http.routers.echohub-production.rule=Host(\`${DOMAIN}\`)"
+                  - "traefik.http.routers.echohub-production.entrypoints=websecure"
+                  - "traefik.http.routers.echohub-production.tls=true"
+                  - "traefik.http.routers.echohub-production.tls.certresolver=letsencrypt"
+                  - "traefik.http.services.echohub-production.loadbalancer.server.port=8000"
+                  # Production-specific middleware
+                  - "traefik.http.routers.echohub-production.middlewares=echohub-ratelimit"
+                  - "traefik.http.middlewares.echohub-ratelimit.ratelimit.average=100"
+                  - "traefik.http.middlewares.echohub-ratelimit.ratelimit.burst=50"
+
+            networks:
+              web:
+                external: true
+            COMPOSE_EOF
+
+            # Pull new image
+            echo "Pulling new image..."
+            if ! docker-compose pull; then
+              echo "ERROR: Failed to pull image"
+              exit 1
+            fi
+
+            # Zero-downtime deployment
+            echo "Starting zero-downtime deployment..."
+            docker-compose up -d --remove-orphans
+
+            # Wait for container to start
+            echo "Waiting for container to start..."
+            for i in {1..60}; do
+              if docker-compose ps echohub 2>/dev/null | grep -q "Up"; then
+                echo "Container started"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "ERROR: Container failed to start"
+                docker-compose logs --tail=100 echohub
+                exit 1
+              fi
+              sleep 2
+            done
+
+            # Wait for application initialization (migrations, etc.)
+            echo "Waiting for application initialization..."
+            sleep 45
+
+            # Comprehensive health checks
+            echo "Running health checks..."
+            HEALTH_PASSED=false
+
+            for attempt in {1..20}; do
+              echo "Health check attempt $attempt/20..."
+
+              # Internal health check
+              if docker exec echohub-production curl -sf http://localhost:8000/up >/dev/null 2>&1; then
+                echo "Internal health check: PASS"
+
+                # External health check
+                sleep 5
+                EXTERNAL_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 10 "https://$DOMAIN/up" 2>/dev/null || echo "000")
+
+                if [ "$EXTERNAL_CODE" == "200" ]; then
+                  echo "External health check: PASS (HTTP $EXTERNAL_CODE)"
+                  HEALTH_PASSED=true
+                  break
+                else
+                  echo "External health check: WAITING (HTTP $EXTERNAL_CODE)"
+                fi
+              else
+                echo "Internal health check: WAITING"
+              fi
+
+              sleep 10
+            done
+
+            if [ "$HEALTH_PASSED" = false ]; then
+              echo "========================================="
+              echo "ERROR: Health checks failed"
+              echo "========================================="
+              docker-compose logs --tail=100 echohub
+
+              # Automatic rollback
+              if [ -f .rollback_image ] && [ -n "$(cat .rollback_image)" ]; then
+                ROLLBACK_IMAGE=$(cat .rollback_image)
+                echo "Initiating automatic rollback to: $ROLLBACK_IMAGE"
+
+                docker tag "$ROLLBACK_IMAGE" "$IMAGE_TAG"
+                docker-compose up -d --force-recreate
+
+                echo "Rollback initiated - manual verification required"
+              fi
+
+              exit 1
+            fi
+
+            echo "========================================="
+            echo "PRODUCTION DEPLOYMENT SUCCESSFUL"
+            echo "========================================="
+            echo "Version: $VERSION"
+            echo "Health: OK"
+            echo "URL: https://$DOMAIN"
+            echo "========================================="
+
+            # Cleanup old images (keep last 5)
+            docker images | grep "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}" | grep "prod" | tail -n +6 | awk '{print $3}' | xargs -r docker rmi || true
+
+      - name: Run production smoke tests
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            DOMAIN="hub.echotravel.app"
+            echo "Running production smoke tests..."
+
+            # Test 1: Health endpoint
+            if ! curl -sf "https://$DOMAIN/up" >/dev/null; then
+              echo "FAIL: Health endpoint"
+              exit 1
+            fi
+            echo "PASS: Health endpoint"
+
+            # Test 2: Homepage loads
+            if ! curl -sf "https://$DOMAIN/" >/dev/null; then
+              echo "FAIL: Homepage"
+              exit 1
+            fi
+            echo "PASS: Homepage"
+
+            # Test 3: Login page
+            if ! curl -sf "https://$DOMAIN/login" >/dev/null; then
+              echo "FAIL: Login page"
+              exit 1
+            fi
+            echo "PASS: Login page"
+
+            # Test 4: Assets
+            if ! curl -sf "https://$DOMAIN/build/manifest.json" >/dev/null; then
+              echo "FAIL: Assets"
+              exit 1
+            fi
+            echo "PASS: Assets"
+
+            # Test 5: Database
+            cd /opt/echohub-production
+            if ! docker exec echohub-production php artisan tinker --execute="DB::connection()->getPdo(); echo 'OK';" 2>&1 | grep -q "OK"; then
+              echo "FAIL: Database"
+              exit 1
+            fi
+            echo "PASS: Database"
+
+            # Test 6: SSL Certificate
+            if ! curl -sf -I "https://$DOMAIN/" | grep -q "strict-transport-security"; then
+              echo "WARN: HSTS header not found"
+            else
+              echo "PASS: SSL/HSTS"
+            fi
+
+            echo ""
+            echo "All production smoke tests passed!"
+
+      - name: Notify Slack on success
+        if: success() && (vars.SLACK_WEBHOOK_URL != '' || secrets.SLACK_WEBHOOK_URL != '')
+        run: |
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL || vars.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "<!channel> Production Deployment Successful",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":rocket: EchoHub Production Deployment"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Environment:*\n:shield: Production"},
+                    {"type": "mrkdwn", "text": "*Status:*\n:white_check_mark: Deployed"},
+                    {"type": "mrkdwn", "text": "*Version:*\n`${{ needs.pre-deploy-checks.outputs.version }}`"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n`${{ github.sha }}`"},
+                    {"type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}"},
+                    {"type": "mrkdwn", "text": "*URL:*\n<https://hub.echotravel.app|hub.echotravel.app>"}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":white_check_mark: All health checks passed\n:white_check_mark: All smoke tests passed\n:white_check_mark: Backup created"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View deployment logs>"
+                    }
+                  ]
+                }
+              ]
+            }'
+
+      - name: Notify Slack on failure
+        if: failure() && (vars.SLACK_WEBHOOK_URL != '' || secrets.SLACK_WEBHOOK_URL != '')
+        run: |
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL || vars.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "<!channel> :rotating_light: PRODUCTION DEPLOYMENT FAILED :rotating_light:",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":rotating_light: Production Deployment Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Environment:*\nProduction"},
+                    {"type": "mrkdwn", "text": "*Status:*\n:x: FAILED"},
+                    {"type": "mrkdwn", "text": "*Version:*\n`${{ needs.pre-deploy-checks.outputs.version }}`"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n`${{ github.sha }}`"},
+                    {"type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}"}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":warning: *Action Required*\nAutomatic rollback may have been initiated. Check logs immediately."
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "View Logs"},
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                      "style": "danger"
+                    }
+                  ]
+                }
+              ]
+            }'
+
+  # Post-deployment monitoring
+  post-deploy:
+    name: Post-Deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    timeout-minutes: 10
+
+    steps:
+      - name: Monitor for 5 minutes
+        run: |
+          echo "Monitoring production for 5 minutes..."
+          DOMAIN="hub.echotravel.app"
+
+          for i in {1..30}; do
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "https://$DOMAIN/up" 2>/dev/null || echo "000")
+
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "WARNING: Health check failed at $(date) - HTTP $HTTP_CODE"
+            else
+              echo "OK: Health check passed ($i/30) - HTTP $HTTP_CODE"
+            fi
+
+            sleep 10
+          done
+
+          echo "Post-deployment monitoring complete"

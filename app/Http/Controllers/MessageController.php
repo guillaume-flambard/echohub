@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SendMessageRequest;
 use App\Models\App;
 use App\Models\Contact;
 use App\Services\MatrixService;
 use App\Services\MinervaAI\InstanceManager;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
@@ -22,13 +22,10 @@ class MessageController extends Controller
     /**
      * Send a message to a contact (app or human)
      */
-    public function send(Request $request, Contact $contact)
+    public function send(SendMessageRequest $request, Contact $contact)
     {
-        $this->authorize('view', $contact);
-
-        $validated = $request->validate([
-            'message' => 'required|string',
-        ]);
+        // Authorization is handled in SendMessageRequest
+        $validated = $request->validated();
 
         $user = Auth::user();
 

@@ -1,0 +1,165 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false  # Never cancel deployments mid-flight
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: echohub
+  ENVIRONMENT: development
+
+jobs:
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: development
+      url: https://dev-hub.echotravel.app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:dev-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:dev-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+
+      - name: Deploy to Development VPS
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 10
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD_DEV }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 10m
+          envs: APP_KEY,DB_PASSWORD
+          script: |
+            set -e
+
+            export ENVIRONMENT="development"
+            export IMAGE_TAG="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:dev-${{ github.sha }}"
+            export DOMAIN="dev-hub.echotravel.app"
+            export DB_HOST="standalone-postgres"
+            export DB_DATABASE="echohub"
+            export DB_USERNAME="echohub"
+
+            echo "Deploying EchoHub to Development"
+            echo "Image: $IMAGE_TAG"
+            echo "Commit: ${{ github.sha }}"
+
+            # Create deployment directory
+            mkdir -p /opt/echohub-dev
+            cd /opt/echohub-dev
+
+            # Create docker-compose.yml
+            cat > docker-compose.yml << 'COMPOSE_EOF'
+            version: '3.8'
+
+            services:
+              echohub:
+                image: ${IMAGE_TAG}
+                container_name: echohub-dev
+                restart: unless-stopped
+                environment:
+                  - APP_NAME=EchoHub-Dev
+                  - APP_ENV=local
+                  - APP_KEY=${APP_KEY}
+                  - APP_DEBUG=true
+                  - APP_URL=https://${DOMAIN}
+                  - LOG_LEVEL=debug
+                  - LOG_CHANNEL=daily
+
+                  # Database
+                  - DB_CONNECTION=pgsql
+                  - DB_HOST=${DB_HOST}
+                  - DB_PORT=5432
+                  - DB_DATABASE=${DB_DATABASE}
+                  - DB_USERNAME=${DB_USERNAME}
+                  - DB_PASSWORD=${DB_PASSWORD}
+
+                  # AI Integration
+                  - MINERVA_AI_PROVIDER=ollama
+                  - MINERVA_AI_BASE_URL=http://ollama-service:11434
+                  - MINERVA_AI_MODEL=qwen2.5:3b
+
+                  # Cache (file-based for dev)
+                  - CACHE_DRIVER=file
+                  - SESSION_DRIVER=file
+                  - QUEUE_CONNECTION=database
+
+                networks:
+                  - web
+
+                labels:
+                  - "traefik.enable=true"
+                  - "traefik.http.routers.echohub-dev.rule=Host(\`${DOMAIN}\`)"
+                  - "traefik.http.routers.echohub-dev.entrypoints=websecure"
+                  - "traefik.http.routers.echohub-dev.tls=true"
+                  - "traefik.http.routers.echohub-dev.tls.certresolver=letsencrypt"
+                  - "traefik.http.services.echohub-dev.loadbalancer.server.port=8000"
+
+            networks:
+              web:
+                external: true
+            COMPOSE_EOF
+
+            # Pull and deploy
+            docker-compose pull
+            docker-compose up -d --remove-orphans
+
+            # Quick health check (dev doesn't need extensive checks)
+            echo "Waiting for container..."
+            sleep 15
+
+            if docker exec echohub-dev curl -sf http://localhost:8000/up >/dev/null 2>&1; then
+              echo "Deployment successful!"
+            else
+              echo "Warning: Health check failed, check logs"
+              docker-compose logs --tail=50 echohub
+            fi
+
+            # Cleanup old images (keep last 3)
+            docker images | grep "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}" | grep "dev" | tail -n +4 | awk '{print $3}' | xargs -r docker rmi || true
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "Deployed to Development"
+            echo "URL: https://dev-hub.echotravel.app"
+            echo "Commit: ${{ github.sha }}"
+          else
+            echo "Deployment failed - check logs above"
+          fi

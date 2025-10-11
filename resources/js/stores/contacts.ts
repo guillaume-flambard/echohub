@@ -20,9 +20,13 @@ export const useContactsStore = create<ContactsState>((set) => ({
         try {
             const params = type ? { type } : {};
             const response = await axios.get('/api/contacts', { params });
-            set({ contacts: response.data.contacts, loading: false });
+            set({
+                contacts: response.data.contacts || [],
+                loading: false,
+            });
         } catch (err: unknown) {
             set({
+                contacts: [], // Reset to empty array on error
                 error: getAxiosErrorMessage(err) || 'Failed to fetch contacts',
                 loading: false,
             });

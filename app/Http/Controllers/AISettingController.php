@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateAISettingsRequest;
 use App\Models\AISetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -41,14 +42,10 @@ class AISettingController extends Controller
     /**
      * Update AI settings
      */
-    public function update(Request $request)
+    public function update(UpdateAISettingsRequest $request)
     {
-        $validated = $request->validate([
-            'provider' => 'required|in:ollama,openai,anthropic',
-            'model' => 'required|string',
-            'base_url' => 'nullable|string',
-            'api_key' => 'nullable|string',
-        ]);
+        // Authorization and validation handled in UpdateAISettingsRequest
+        $validated = $request->validated();
 
         $setting = AISetting::getActive($request->user()->id);
 

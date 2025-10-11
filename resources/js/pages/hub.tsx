@@ -8,7 +8,7 @@ import { useContactsStore } from '@/stores/contacts';
 import { useMessagesStore } from '@/stores/messages';
 import { type BreadcrumbItem, type Contact } from '@/types';
 import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -44,7 +44,8 @@ export default function Hub() {
     // Fetch contacts on mount
     useEffect(() => {
         fetchContacts();
-    }, [fetchContacts]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Intentionally empty - run once on mount
 
     // Restore selected contact from localStorage after contacts are loaded
     useEffect(() => {
@@ -84,19 +85,22 @@ export default function Hub() {
         ? sending[selectedContact.id] || false
         : false;
 
-    const handleSelectContact = (contact: Contact) => {
+    const handleSelectContact = useCallback((contact: Contact) => {
         setSelectedContact(contact);
         setIsMobileContactsOpen(false); // Close mobile contacts on selection
         // Persist selected contact to localStorage
         localStorage.setItem('hub_selected_contact_id', contact.id.toString());
-    };
+    }, []);
 
-    const handleSendMessage = async (content: string) => {
-        if (!selectedContact) return false;
-        return await sendMessage(selectedContact, content);
-    };
+    const handleSendMessage = useCallback(
+        async (content: string) => {
+            if (!selectedContact) return false;
+            return await sendMessage(selectedContact, content);
+        },
+        [selectedContact, sendMessage],
+    );
 
-    const handleClearHistory = async () => {
+    const handleClearHistory = useCallback(async () => {
         if (!selectedContact) return false;
 
         const confirmed = window.confirm(
@@ -107,7 +111,7 @@ export default function Hub() {
             return await clearHistory(selectedContact);
         }
         return false;
-    };
+    }, [selectedContact, clearHistory]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

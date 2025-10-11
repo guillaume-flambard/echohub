@@ -30,14 +30,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/apps/{app}', [AppController::class, 'destroy']);
     Route::post('/apps/{app}/status', [AppController::class, 'updateStatus']);
 
-    // Messages
-    Route::post('/contacts/{contact}/messages', [MessageController::class, 'send']);
+    // Messages (with rate limiting to prevent AI abuse)
+    Route::post('/contacts/{contact}/messages', [MessageController::class, 'send'])
+        ->middleware('throttle:20,1'); // 20 requests per minute
     Route::get('/contacts/{contact}/messages', [MessageController::class, 'history']);
     Route::delete('/contacts/{contact}/messages', [MessageController::class, 'clearHistory']);
 
-    // AI Settings
+    // AI Settings (rate limit configuration changes)
     Route::get('/ai-settings', [AISettingController::class, 'index']);
-    Route::put('/ai-settings', [AISettingController::class, 'update']);
+    Route::put('/ai-settings', [AISettingController::class, 'update'])
+        ->middleware('throttle:10,1'); // 10 updates per minute
     Route::get('/ai-settings/models', [AISettingController::class, 'availableModels']);
 
     // Service Account Management (Admin only)
@@ -63,7 +65,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 |
 */
 
-Route::prefix('external')->middleware(['service.account'])->name('api.external.')->group(function () {
+Route::prefix('external')->middleware(['service.account', 'throttle:60,1'])->name('api.external.')->group(function () {
     // Health check (no scope required)
     Route::get('/health', [ExternalApiController::class, 'health'])->name('health');
 

@@ -106,6 +106,9 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             });
         } catch {
             set({
+                stats: null,
+                recentActivity: [], // Reset to empty array on error
+                trends: [], // Reset to empty array on error
                 error: 'Failed to fetch dashboard data',
                 loading: false,
             });

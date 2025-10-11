@@ -48,12 +48,15 @@ docker exec -it echohub_synapse register_new_matrix_user \
 echo ""
 echo -e "${YELLOW}🔑 Getting access token...${NC}"
 
-# Login to get access token
-ACCESS_TOKEN_RESPONSE=$(curl -s -X POST "http://localhost:8008/_matrix/client/r0/login" \
+# Login to get access token (using Matrix v3 API)
+ACCESS_TOKEN_RESPONSE=$(curl -s -X POST "http://localhost:8008/_matrix/client/v3/login" \
     -H "Content-Type: application/json" \
     -d "{
         \"type\": \"m.login.password\",
-        \"user\": \"$BOT_USERNAME\",
+        \"identifier\": {
+            \"type\": \"m.id.user\",
+            \"user\": \"$BOT_USERNAME\"
+        },
         \"password\": \"$BOT_PASSWORD\"
     }")
 

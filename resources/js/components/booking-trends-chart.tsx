@@ -16,7 +16,7 @@ interface TrendData {
 }
 
 interface BookingTrendsChartProps {
-    data: TrendData[];
+    data: TrendData[] | undefined;
     loading?: boolean;
 }
 
@@ -31,7 +31,7 @@ export function BookingTrendsChart({ data, loading }: BookingTrendsChartProps) {
         );
     }
 
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
         return (
             <div className="flex h-64 items-center justify-center">
                 <div className="text-sm text-muted-foreground">

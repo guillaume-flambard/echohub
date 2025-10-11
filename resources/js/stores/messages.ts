@@ -37,6 +37,10 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
             }));
         } catch {
             set((state) => ({
+                messages: {
+                    ...state.messages,
+                    [contact.id]: [], // Reset to empty array on error
+                },
                 error: 'Failed to fetch messages',
                 loading: { ...state.loading, [contact.id]: false },
             }));

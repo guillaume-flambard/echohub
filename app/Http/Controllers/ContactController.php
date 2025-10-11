@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreContactRequest;
+use App\Http\Requests\UpdateContactRequest;
+use App\Http\Resources\ContactResource;
 use App\Models\Contact;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -28,9 +31,7 @@ class ContactController extends Controller
 
         $contacts = $query->orderBy('name')->get();
 
-        return response()->json([
-            'contacts' => $contacts,
-        ]);
+        return ContactResource::collection($contacts);
     }
 
     /**
@@ -42,24 +43,16 @@ class ContactController extends Controller
 
         $contact->load('app');
 
-        return response()->json([
-            'contact' => $contact,
-        ]);
+        return ContactResource::make($contact);
     }
 
     /**
      * Create a new contact
      */
-    public function store(Request $request)
+    public function store(StoreContactRequest $request)
     {
-        $validated = $request->validate([
-            'matrix_id' => 'required|string',
-            'type' => 'required|in:app,human',
-            'app_id' => 'nullable|exists:apps,id',
-            'name' => 'required|string|max:255',
-            'avatar' => 'nullable|string',
-            'metadata' => 'nullable|array',
-        ]);
+        // Authorization and validation handled in StoreContactRequest
+        $validated = $request->validated();
 
         $contact = Contact::create([
             'user_id' => Auth::id(),
@@ -68,29 +61,22 @@ class ContactController extends Controller
 
         $contact->load('app');
 
-        return response()->json([
-            'contact' => $contact,
-        ], 201);
+        return ContactResource::make($contact)
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
      * Update a contact
      */
-    public function update(Request $request, Contact $contact)
+    public function update(UpdateContactRequest $request, Contact $contact)
     {
-        $this->authorize('update', $contact);
-
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'avatar' => 'nullable|string',
-            'metadata' => 'nullable|array',
-        ]);
+        // Authorization and validation handled in UpdateContactRequest
+        $validated = $request->validated();
 
         $contact->update($validated);
 
-        return response()->json([
-            'contact' => $contact,
-        ]);
+        return ContactResource::make($contact);
     }
 
     /**
