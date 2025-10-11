@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=${APP_NAME:-EchoHub}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${APP_KEY}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_URL=${APP_URL:-http://localhost:8000}
+
+      - DB_CONNECTION=${DB_CONNECTION:-sqlite}
+      - DB_DATABASE=${DB_DATABASE:-/var/www/html/database/database.sqlite}
+
+      - MINERVA_AI_PROVIDER=${MINERVA_AI_PROVIDER:-groq}
+      - MINERVA_AI_API_KEY=${MINERVA_AI_API_KEY}
+      - MINERVA_AI_MODEL=${MINERVA_AI_MODEL:-llama-3.3-70b-versatile}
+      - MINERVA_AI_BASE_URL=${MINERVA_AI_BASE_URL:-https://api.groq.com/openai/v1}
+
+      - MATRIX_HOMESERVER_URL=${MATRIX_HOMESERVER_URL:-http://synapse:8008}
+      - MATRIX_SERVER_NAME=${MATRIX_SERVER_NAME:-echohub.local}
+      - MATRIX_ADMIN_USER=${MATRIX_ADMIN_USER:-admin}
+      - MATRIX_ADMIN_PASSWORD=${MATRIX_ADMIN_PASSWORD}
+    volumes:
+      - ./database:/var/www/html/database
+      - ./storage:/var/www/html/storage
+    networks:
+      - echohub
+    depends_on:
+      - synapse
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  synapse:
+    image: matrixdotorg/synapse:latest
+    ports:
+      - "8008:8008"
+    environment:
+      - SYNAPSE_SERVER_NAME=${MATRIX_SERVER_NAME:-echohub.local}
+      - SYNAPSE_REPORT_STATS=no
+    volumes:
+      - synapse_data:/data
+    networks:
+      - echohub
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/_matrix/client/versions"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  synapse_data:
+    driver: local
+
+networks:
+  echohub:
+    driver: bridge
