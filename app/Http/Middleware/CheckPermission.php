@@ -18,7 +18,7 @@ class CheckPermission
      * Route::get('/users', [UserController::class, 'index'])
      *     ->middleware('permission:users.view');
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
