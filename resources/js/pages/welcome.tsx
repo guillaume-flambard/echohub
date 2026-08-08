@@ -96,7 +96,7 @@ export default function Welcome() {
                                             <a
                                                 href="https://ollama.com"
                                                 target="_blank"
-                                                className="font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
+                                                className="font-medium text-[#d42900] underline underline-offset-4 dark:text-[#FF4433]"
                                             >
                                                 Ollama
                                             </a>{' '}
@@ -127,7 +127,7 @@ export default function Welcome() {
                                             {auth.user ? (
                                                 <Link
                                                     href={hub()}
-                                                    className="font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
+                                                    className="font-medium text-[#d42900] underline underline-offset-4 dark:text-[#FF4433]"
                                                 >
                                                     Hub
                                                 </Link>
@@ -180,13 +180,13 @@ export default function Welcome() {
                             </div>
                         </div>
 
-                        <div className="relative flex flex-col justify-between rounded-tl-lg rounded-tr-lg bg-[#f53003] p-6 pb-12 lg:w-[370px] lg:rounded-tr-lg lg:rounded-bl-none lg:p-10 dark:bg-[#FF4433]">
+                        <div className="relative flex flex-col justify-between rounded-tl-lg rounded-tr-lg bg-[#d42900] p-6 pb-12 lg:w-[370px] lg:rounded-tr-lg lg:rounded-bl-none lg:p-10 dark:bg-[#CC2E10]">
                             <div className="relative z-[1] flex flex-col">
                                 <div className="mb-8 lg:mb-12">
                                     <h2 className="mb-2 text-lg font-semibold text-white">
                                         Chat with Your Apps
                                     </h2>
-                                    <p className="text-sm leading-relaxed text-white/90">
+                                    <p className="text-sm leading-relaxed text-white">
                                         Minerva AI brings natural language
                                         interaction to your entire app
                                         ecosystem.
@@ -214,7 +214,7 @@ export default function Welcome() {
                             </div>
 
                             <div className="relative mt-8">
-                                <div className="absolute inset-0 -bottom-12 bg-gradient-to-b from-transparent to-[#f53003] lg:-bottom-10 dark:to-[#FF4433]" />
+                                <div className="absolute inset-0 -bottom-12 bg-gradient-to-b from-transparent to-[#d42900] lg:-bottom-10 dark:to-[#CC2E10]" />
                             </div>
                         </div>
                     </main>
@@ -264,7 +264,7 @@ function ExampleMessage({
             <div
                 className={`max-w-[85%] rounded-lg px-3 py-2 text-xs leading-relaxed ${
                     type === 'user'
-                        ? 'bg-white/20 text-white'
+                        ? 'bg-black/30 text-white'
                         : 'bg-white/95 text-[#1b1b18]'
                 }`}
             >
