@@ -1,9 +1,15 @@
-import ServiceAccountController from './ServiceAccountController'
-import ExternalApiController from './ExternalApiController'
+import ExternalApiController from './ExternalApiController';
+import ServiceAccountController from './ServiceAccountController';
 
 const Api = {
-    ServiceAccountController: Object.assign(ServiceAccountController, ServiceAccountController),
-    ExternalApiController: Object.assign(ExternalApiController, ExternalApiController),
-}
+    ServiceAccountController: Object.assign(
+        ServiceAccountController,
+        ServiceAccountController,
+    ),
+    ExternalApiController: Object.assign(
+        ExternalApiController,
+        ExternalApiController,
+    ),
+};
 
-export default Api
+export default Api;
