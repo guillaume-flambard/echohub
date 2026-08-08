@@ -120,7 +120,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --allow-build=@tailwindcss/oxide --allow-build=esbuild
+        run: pnpm install --frozen-lockfile
 
       - name: Run ESLint
         run: pnpm run lint
@@ -198,7 +198,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Node dependencies
-        run: pnpm install --frozen-lockfile --allow-build=@tailwindcss/oxide --allow-build=esbuild
+        run: pnpm install --frozen-lockfile
 
       - name: Build frontend assets
         run: pnpm run build
@@ -280,7 +280,7 @@ jobs:
 
       - name: Run npm audit
         run: |
-          pnpm install --frozen-lockfile --allow-build=@tailwindcss/oxide --allow-build=esbuild
+          pnpm install --frozen-lockfile
           pnpm audit --audit-level=high
         continue-on-error: true
 

@@ -67,7 +67,7 @@ jobs:
       run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
     - name: 🔧 Install Node Dependencies
-      run: pnpm install --no-frozen-lockfile --allow-build=@tailwindcss/oxide --allow-build=esbuild
+      run: pnpm install --no-frozen-lockfile
 
     - name: ⚙️ Setup Test Environment
       run: |
