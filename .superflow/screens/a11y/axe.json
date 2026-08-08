@@ -1,0 +1,101 @@
+[
+  {
+    "viewport": "mobile-375",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": ".underline",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".mb-2",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".text-white\\/90",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".justify-end.flex:nth-child(1) > .bg-white\\/20.text-white.max-w-\\[85\\%\\]",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".justify-end.flex:nth-child(3) > .bg-white\\/20.text-white.max-w-\\[85\\%\\]",
+            "summary": "Fix any of the following:"
+          }
+        ]
+      }
+    ],
+    "consoleErrors": []
+  },
+  {
+    "viewport": "tablet-768",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": ".underline",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".mb-2",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".text-white\\/90",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".justify-end.flex:nth-child(1) > .bg-white\\/20.text-white.max-w-\\[85\\%\\]",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".justify-end.flex:nth-child(3) > .bg-white\\/20.text-white.max-w-\\[85\\%\\]",
+            "summary": "Fix any of the following:"
+          }
+        ]
+      }
+    ],
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1280",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": ".underline",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".mb-2",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".text-white\\/90",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".justify-end.flex:nth-child(1) > .bg-white\\/20.text-white.max-w-\\[85\\%\\]",
+            "summary": "Fix any of the following:"
+          },
+          {
+            "target": ".justify-end.flex:nth-child(3) > .bg-white\\/20.text-white.max-w-\\[85\\%\\]",
+            "summary": "Fix any of the following:"
+          }
+        ]
+      }
+    ],
+    "consoleErrors": []
+  }
+]

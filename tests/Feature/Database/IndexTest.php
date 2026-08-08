@@ -90,11 +90,12 @@ test('matrix_user_id index improves app lookups', function () {
 });
 
 test('migration can be rolled back successfully', function () {
-    // Get current migration status
+    // Target the specific migration (--step=1 would hit whatever migration was
+    // added last; this test is about the missing-database-indexes migration).
     $migrationFile = '2025_10_11_093208_add_missing_database_indexes';
 
     // Rollback the migration
-    $this->artisan('migrate:rollback', ['--step' => 1])
+    $this->artisan('migrate:rollback', ['--path' => "database/migrations/{$migrationFile}.php"])
         ->assertExitCode(0);
 
     // Verify indexes are removed

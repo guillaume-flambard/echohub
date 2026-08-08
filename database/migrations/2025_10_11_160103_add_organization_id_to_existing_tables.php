@@ -40,16 +40,19 @@ return new class extends Migration
     {
         Schema::table('contacts', function (Blueprint $table) {
             $table->dropForeign(['organization_id']);
+            $table->dropIndex(['organization_id']);
             $table->dropColumn('organization_id');
         });
 
         Schema::table('apps', function (Blueprint $table) {
             $table->dropForeign(['organization_id']);
+            $table->dropIndex(['organization_id']);
             $table->dropColumn('organization_id');
         });
 
         Schema::table('minerva_contexts', function (Blueprint $table) {
             $table->dropForeign(['organization_id']);
+            $table->dropIndex(['organization_id']);
             $table->dropColumn('organization_id');
         });
     }
