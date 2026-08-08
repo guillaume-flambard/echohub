@@ -21,6 +21,7 @@ jobs:
     name: PHP Tests (Pest)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: frontend-build
 
     services:
       postgres:
@@ -78,6 +79,12 @@ jobs:
 
       - name: Run database migrations
         run: php artisan migrate --force
+
+      - name: Download frontend build (Vite manifest)
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: public/build/
 
       - name: Run PHP tests with coverage
         run: |
