@@ -39,13 +39,13 @@ jobs:
         php-version: '8.3'
         extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql, dom, filter, gd, json, pgsql, bcmath, opcache
 
+    - name: 📦 Setup pnpm
+      uses: pnpm/action-setup@v4
+
     - name: 📦 Setup Node.js & PNPM
       uses: actions/setup-node@v4
       with:
         node-version: '22'
-
-    - name: 🔧 Enable Corepack for PNPM
-      run: corepack enable
 
     - name: 📦 Cache Composer dependencies
       uses: actions/cache@v3
