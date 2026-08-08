@@ -29,3 +29,5 @@ yarn-error.log
 !/synapse/data/homeserver.yaml
 !/synapse/data/echohub.local.log.config
 /synapse/postgres
+
+.next/
