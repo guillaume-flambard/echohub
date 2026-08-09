@@ -1,8 +1,7 @@
 name: Deploy to Development
 
 on:
-  push:
-    branches: [develop]
+  # Deployment is handled by Dokploy. Manual-only.
   workflow_dispatch:
 
 concurrency:
