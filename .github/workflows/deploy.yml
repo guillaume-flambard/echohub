@@ -1,10 +1,8 @@
 name: Deploy EchoHub
 
 on:
-  push:
-    branches:
-      - main         # Deploy to production
-      - development  # Deploy to staging
+  # Deployment is handled by Dokploy (it pulls the image pushed by CI).
+  # This SSH workflow is manual-only — the automated deploy was removed.
   workflow_dispatch:
     inputs:
       environment:
